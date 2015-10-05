@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/python
 
 # Outputs decimal numbers to 74HCT595 shift registers connected
 # to 74LS274 BCD-to-7-Segment decoders.
@@ -7,6 +7,7 @@ import RPi.GPIO as GPIO
 import urllib.request
 import json
 import time
+import os
 
 
 # IO Port definitions (not pins!)
@@ -58,7 +59,7 @@ def main():
 
   while (True):
     # getting the value from the cloud
-    url = "http://metricsinyourfacecl-env.elasticbeanstalk.com/getValue?id=testpi"
+    url = os.getenv("metricsinyourfaceurl", "")
     response = urllib.request.urlopen(url)
     data = json.loads(response.read().decode('utf-8'))
     #displaying the value

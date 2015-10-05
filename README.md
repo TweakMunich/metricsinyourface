@@ -2,6 +2,8 @@
 An IoT project mixing RaspberryPI code and code for the Cloud.
 This project will contain the overall documentation and the kanban board.
 
-https://github.com/jeffeland/metricsinyourface_pi is the project containing the code running on the PI and establishing the communication between the server in the cloud and the seven segments displays.
+The client folder contains the code running in the pi to display data on the 7 segment digits after reading the value to display on the server. 
 
-https://github.com/jeffeland/metricsinyourface_cloud is the project containing the code running on the cloud which establishes the link from any computer to the PI.
+The server folder is the code running somewhere on a public cloud. To make it run on your machine, execute : npm install, then node app.js.
+
+To make it run on AWS Beanstalk, create a zip from this the file contained in this folder and follow the instruction on AWS Beanstalk wizard.

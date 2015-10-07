@@ -1,14 +1,16 @@
 #! /usr/bin/python
-
+# python app.py domain_name.com pi_id
 # Outputs decimal numbers to 74HCT595 shift registers connected
 # to 74LS274 BCD-to-7-Segment decoders.
 
 import RPi.GPIO as GPIO
-import urllib.request
+import urllib2
 import json
 import time
 import os
+import sys
 
+args=sys.argv
 
 # IO Port definitions (not pins!)
 GPIO_SER = 17 # serial data (high bit first) - to 595 SER (14)
@@ -59,7 +61,7 @@ def main():
 
   while (True):
     # getting the value from the cloud
-    url = os.getenv("metricsinyourfaceurl", "")
+    url = "http://" + os.getenv("metricsinyourfaceurl", agrs[1]) + "/getvalue?id=" + args[2]
     response = urllib.request.urlopen(url)
     data = json.loads(response.read().decode('utf-8'))
     #displaying the value

@@ -1,4 +1,6 @@
 // A very simple key-value store. Keys and values can be any string.
+// 
+// Override default port 3000 with PORT=1234 environment variable
 //
 // Set value with HTTP POST:
 // curl -v -H "Content-Type: application/json" -X POST -d  '{"id":"testpi", "value":"200"}' http://myhost:3000/setValue

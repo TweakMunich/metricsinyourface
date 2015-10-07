@@ -6,4 +6,5 @@ cd metricsinyourface
 curl –o app.js https://raw.githubusercontent.com/TweakMunich/metricsinyourface/master/server/app.js
 curl –o package.json https://raw.githubusercontent.com/TweakMunich/metricsinyourface/blob/master/server/package.json
 ../node-v4.1.2-linux-x64/bin/npm install
-../node-v4.1.2-linux-x64/bin/node app.js
+../node-v4.1.2-linux-x64/bin/npm install fovever
+forever start app.js

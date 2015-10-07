@@ -61,7 +61,7 @@ def main():
 
   while (True):
     # getting the value from the cloud
-    url = "http://" + os.getenv("metricsinyourfaceurl", agrs[1]) + "/getvalue?id=" + args[2]
+    url = "http://" + os.getenv("metricsinyourfaceurl", args[1]) + "/getvalue?id=" + args[2]
     response = urllib.request.urlopen(url)
     data = json.loads(response.read().decode('utf-8'))
     #displaying the value

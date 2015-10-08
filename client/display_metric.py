@@ -26,10 +26,17 @@ def main():
 
   while (True):
     # getting the value from the cloud
-    response = urllib2.urlopen(url)
-    data = json.loads(response.read().decode('utf-8'))
-    # displaying the value
-    bcd.output(int(data["value"]))
+    try: 
+      response = urllib2.urlopen(url)
+      data = json.loads(response.read().decode('utf-8'))
+      # displaying the value
+      if "value" in data:
+        bcd.output(int(data["value"]))
+    except(urllib2.URLError):
+      print("could not reach server")
+    except(ValueError):
+      print("invalid value")
+
     time.sleep(2)
 
   # resetting GPIO messes up display

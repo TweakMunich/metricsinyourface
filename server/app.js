@@ -37,7 +37,7 @@ app.get('/getValue', function (req, res) {
     }
 });
 
-app.use(express.static('.'));
+app.use(express.static('static'));
 
 var server = app.listen(port, function () {
     var host = server.address().address;

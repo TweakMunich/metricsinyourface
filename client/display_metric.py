@@ -3,7 +3,7 @@
 # sudo python display_metric.py domain_name.com metric_id
 #
 # Fetches decimal numbers from simple webs service and displays 
-# them on 7 segment diaplsys. Uses 74HCT595 shift registers connected
+# them on 7 segment displays. Uses 74HCT595 shift registers connected
 # to 74LS274 BCD-to-7-Segment decoders.
 
 import bcd

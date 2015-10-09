@@ -37,15 +37,7 @@ app.get('/getValue', function (req, res) {
     }
 });
 
-app.get('/', function (req, res) {
-    res.send('<html><form action="/setValue" method="post">' + 
-            'id: ' + 
-            '<input type="text" name="id"><br>' +
-            'value: ' + 
-            '<input type="text" name="value"><br>' +
-            '<input type="submit" value="Submit">' +
-            '<form/></html>');
-});
+app.use(express.static('.'));
 
 var server = app.listen(port, function () {
     var host = server.address().address;

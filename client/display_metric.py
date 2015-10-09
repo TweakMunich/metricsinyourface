@@ -23,6 +23,7 @@ def main():
  
   url = "http://" + os.getenv("metricsinyourfaceurl", args[1]) + "/getvalue?id=" + args[2]
   bcd.setup()
+  value = 0
 
   while (True):
     # getting the value from the cloud
@@ -31,9 +32,13 @@ def main():
       data = json.loads(response.read().decode('utf-8'))
       # displaying the value
       if "value" in data:
-        bcd.output(int(data["value"]))
+        value = int(data["value"])
+        bcd.output(value)
     except(urllib2.URLError):
       print("could not reach server")
+      bcd.blank()
+      time.sleep(.2)
+      bcd.output(value)
     except(ValueError):
       print("invalid value")
 

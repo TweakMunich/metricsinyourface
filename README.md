@@ -7,7 +7,7 @@ An IoT project for a Raspberry PI that pulls data from the cloud and displays it
 
 The `client` folder contains the code running in the Pi. To execute: 
 
-  sudo python domainname:port valueprefix
+    sudo python domainname:port valueprefix
 
 The Pi will retrieve values with the `valueprefix` concatenated with the display ID. For example if `valueprefix` is `foo` and a display with the ID 3 is connected to the Pi, it will look for the value of the parameter `foo3`.
 

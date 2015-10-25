@@ -22,7 +22,7 @@ NUM_BITS = 8    # Number of bits per digit
 SEGMENTS = [0b00111111, 0b00000110, 0b01011011, 0b01001111, 0b01100110,
             0b01101101, 0b01111101, 0b00000111, 0b01111111, 0b01101111]
 SPECIAL = { 'u': 0b00011100, 'c': 0b01011000 , '_': 0b00001000 ,
-            '-': 0b01000000 }
+            '-': 0b01000000, ' ': 0b00000000 }
 
 def setup():
   GPIO.setmode(GPIO.BCM)
@@ -63,34 +63,43 @@ def send_raw(segments):
     shift_bit(int(segments) & int(mask) != 0)
     mask = mask >> 1
 
-def send_digit(value):
+def send_digit(value, dp):
   """ Outputs a single digit via serial shift out. High bit first. """
-  send_raw(SEGMENTS[value])
+  send_raw(SEGMENTS[value] | (0x80 * dp))
 
 def send_blank():
   """ Sets a single digit display to blank (all LED off). """
   for digit in range(NUM_BITS):
     shift_bit(False)
 
-def send_char(value):
+def send_char(value, dp=False):
   if value in ['0','1','2','3','4','5','6','7','8','9']:
-    send_digit(int(value))
-  elif value == ' ':
-    send_blank()
+    send_digit(int(value), dp)
   elif value in SPECIAL:
-    send_raw(SPECIAL[value])
+    send_raw(SPECIAL[value] | (0x80 * dp))
 
 def send_str(value):
-  """ Outputs a string consisting of digits or blanks onto 7-segment display. """
+  """ Outputs a string consisting of digits or blanks onto 7-segment display.
+      Periods are treated special in that they add a decimal point to the
+      preceding digit. A decimal point at the start renders a space with dp."""
+  c1 = None
   for c in value:
-    send_char(c)
+    if c == '.':
+      send_char(c1 if c1 else ' ', True)
+      c1 = None
+    else:
+      if c1:
+        send_char(c1)
+      c1 = c
+  if c1:
+    send_char(c1)
 
 def send_number(value, digits):
   """ Outputs an integer number onto 7-segment display. 
       Supresses leading zeros. If width is insufficient,
       displays last (least significant) digits."""
-  text = "{0: {width}}".format(value, width=digits)[-3:]
-  output_str(text)
+  text = "{0: {width}}".format(value, width=digits)[-digits:]
+  output_string(text)
 
 def send_blanks(digits):
   """ Blanks the display (all LED off). """
@@ -101,7 +110,7 @@ def send_blanks(digits):
 # Each call must specify all values for all displays.
 # Mostly provided for convenience if only one display is connected.
 
-def output_str(text):
+def output_string(text):
   """ Outputs a string consisting of digits or blanks onto 7-segment display.
       Can be used for single display or multiple displays if the string 
       contains the correct number of characters for each display."""
@@ -135,7 +144,7 @@ def main():
   elif args[1].isdigit():	
     output_number(int(args[1]), digits)
   else:
-    output_str(args[1])
+    output_string(args[1])
 
   # resetting GPIO messes up display
   cleanup()

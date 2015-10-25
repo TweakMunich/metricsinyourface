@@ -54,18 +54,19 @@ def init():
   """ Reads initial configuration and shows it on the displays. Call
       only on start-up."""
   # Reading config latches data, so fill it with something before
-  sevenseg.output_str("-" * 100)
+  sevenseg.output_string("-." * 100)
   config = readconfig.read_config()
   # Show number of digits for each display to confirm config is read
   sevenseg.start_shift()
   for c in config: 
-    sevenseg.send_str(str(c[0]) * c[0])
+    sevenseg.send_str((str(c[0]) + '.') * c[0])
   sevenseg.latch()
   time.sleep(3)
   # Show ID of each display
   sevenseg.start_shift()
   for c in config: 
-    sevenseg.send_number(c[1], c[0])
+     sevenseg.send_str(str(c[1]).rjust(c[0], '.')[-c[0]:] + '.')
+   #  sevenseg.send_number(c[1], c[0])
   sevenseg.latch()
   time.sleep(3)
   return config
@@ -85,17 +86,20 @@ def main():
   if not config:
     config = [(3, 0)]  # Default: 1 display, 3 digits, ID 0
   text = "uuu"
+  blink = False
 
   while (True):
     t = get_values(url, config)
     if t:
       text = t
-      sevenseg.output_str(text)
+      sevenseg.output_string(text + ('.' * blink))
+      blink = not blink
     else: 
+      # Blink if cannot connect
       print("could not reach server")
-      sevenseg.output_str(" " * 100) # TODO; compute total num digits
+      sevenseg.output_string(" " * 100) # TODO; compute total num digits
       time.sleep(.2)
-      sevenseg.output_str(text)
+      sevenseg.output_string(text)
 
     c = readconfig.read_config()
     if c and not c == config:

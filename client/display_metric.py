@@ -33,7 +33,7 @@ def get_value(url):
 
 def get_values(url, config):
   """ Gets values for all defined displays contatenated into a single
-      string that can be shifted thruogh the displays. Unknown values 
+      string that can be shifted through the displays. Unknown values 
       are indicated by 'u'. Returns None on connection problems. """
   text = ""
   for display in config:
@@ -50,6 +50,26 @@ def get_values(url, config):
       return None
   return text
 
+def init():
+  """ Reads initial configuration and shows it on the displays. Call
+      only on start-up."""
+  # Reading config latches data, so fill it with something before
+  sevenseg.output_str("-" * 100)
+  config = readconfig.read_config()
+  # Show number of digits for each display to confirm config is read
+  sevenseg.start_shift()
+  for c in config: 
+    sevenseg.send_str(str(c[0]) * c[0])
+  sevenseg.latch()
+  time.sleep(3)
+  # Show ID of each display
+  sevenseg.start_shift()
+  for c in config: 
+    sevenseg.send_number(c[1], c[0])
+  sevenseg.latch()
+  time.sleep(3)
+  return config
+
 def main():
   args=sys.argv
   if len(args) < 3:
@@ -61,8 +81,9 @@ def main():
         args[2])
   sevenseg.setup()
   readconfig.setup()
-
-  config = [(3, 0)]  # Default: 1 display, 3 digits, ID 0
+  config = init()
+  if not config:
+    config = [(3, 0)]  # Default: 1 display, 3 digits, ID 0
   text = "uuu"
 
   while (True):

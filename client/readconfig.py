@@ -49,7 +49,7 @@ def read_byte():
 def read_config():
   """ returns a list of tupels indicating (num digits, ID) for each
       connected display. Configs are detected by at least one of the
-      hjighest 3 bits, which indicate the number of digits, to 0."""
+      highest 3 bits, which indicate the number of digits, to 0."""
   result = []
   while(True):
     lo = read_byte()

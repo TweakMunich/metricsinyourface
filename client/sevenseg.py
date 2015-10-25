@@ -21,7 +21,8 @@ NUM_BITS = 8    # Number of bits per digit
 # 7 Segment coding a=bit0, b=bit1, ..., DP=bit7
 SEGMENTS = [0b00111111, 0b00000110, 0b01011011, 0b01001111, 0b01100110,
             0b01101101, 0b01111101, 0b00000111, 0b01111111, 0b01101111]
-SPECIAL = { 'u': 0b00011100, 'c': 0b01011000 , '_': 0b00001000 }
+SPECIAL = { 'u': 0b00011100, 'c': 0b01011000 , '_': 0b00001000 ,
+            '-': 0b01000000 }
 
 def setup():
   GPIO.setmode(GPIO.BCM)
@@ -37,7 +38,7 @@ def setup():
 def cleanup():
   GPIO.cleanup()
 
-def rclk_low():
+def start_shift():
   GPIO.output(GPIO_RCLK, GPIO.LOW)
 
 def latch():
@@ -47,7 +48,7 @@ def latch():
   GPIO.output(GPIO_RCLK, GPIO.LOW)
 
 # The following methods shift sindgle bits, bytes or strings to the
-# Shift registers. Call rclk_low() before and latch() after.
+# Shift registers. Call start_shift() before and latch() after.
 
 def shift_bit(bit):
   """ Shifts a single bit (true/false) to the serial buffer with
@@ -81,10 +82,8 @@ def send_char(value):
 
 def send_str(value):
   """ Outputs a string consisting of digits or blanks onto 7-segment display. """
-  rclk_low()
   for c in value:
     send_char(c)
-  latch()
 
 def send_number(value, digits):
   """ Outputs an integer number onto 7-segment display. 
@@ -106,7 +105,7 @@ def output_str(text):
   """ Outputs a string consisting of digits or blanks onto 7-segment display.
       Can be used for single display or multiple displays if the string 
       contains the correct number of characters for each display."""
-  rclk_low()
+  start_shift()
   send_str(text)
   latch()
 
@@ -114,13 +113,13 @@ def output_number(value, digits):
   """ Outputs an integer value onto a 7-segment display of the specified width. 
       Supresses leading zeros. If width is insufficient, displays the last 
       (least significant) digits."""
-  rclk_low()
+  start_shift()
   send_number(value,digits)
   latch()
 
 def blank(digits):
   """ Blanks the display. """
-  rclk_low()
+  start_shift()
   send_blank(digits)
   latch()
 

@@ -18,6 +18,7 @@ GPIO_RCLK = 22  # Register latch (rising edge) - to 595 RCLK (12)
 
 NUM_DIGITS = 3  # Number of 7-segment displays
 NUM_BITS = 4    # Bits in each digit
+BCD_BLANK = 15  # 74247 decodes 15 to blank
 
 def setup():
   GPIO.setmode(GPIO.BCM)
@@ -33,16 +34,25 @@ def setup():
 def cleanup():
   GPIO.cleanup()
 
-def output_digit(num):
-  mask = 2**(NUM_BITS - 1)
+def latch():
+  """ Latches data into outputs with high strobe (RCLK) """
+  GPIO.output(GPIO_RCLK, GPIO.HIGH)
+  GPIO.output(GPIO_RCLK, GPIO.LOW)
 
-  # shift BCD data into register high bit first
+def shift_bit(bit):
+  """ Shifts a single bit (true/false) to the serial buffer. """
+
+  GPIO.output(GPIO_SER, bit)
+  # shift with high strobe (SCLK)
+  GPIO.output(GPIO_SCLK, GPIO.HIGH)
+  GPIO.output(GPIO_SCLK, GPIO.LOW)
+
+def output_digit(num):
+  """ Outputs a single digit via serial shift out. High bit first. """
+
+  mask = 2**(NUM_BITS - 1)
   for i in range(NUM_BITS):
-    # set bit (SER input)
-    GPIO.output(GPIO_SER, int(num) & int(mask) != 0)
-    # shift with high strobe (SCLK)
-    GPIO.output(GPIO_SCLK, GPIO.HIGH)
-    GPIO.output(GPIO_SCLK, GPIO.LOW)
+    shift_bit(int(num) & int(mask) != 0)
     mask = mask >> 1
 
 def output(num):
@@ -54,9 +64,12 @@ def output(num):
   for digit in range(NUM_DIGITS):
     output_digit((num / mask) % 10)  
     mask = mask / 10
-  # latch data into outputs with high strobe (RCLK)
-  GPIO.output(GPIO_RCLK, GPIO.HIGH)
-  GPIO.output(GPIO_RCLK, GPIO.LOW)
+  latch()
+
+def blank():
+  for digit in range(NUM_DIGITS):
+    output_digit(BCD_BLANK)
+  latch() 
 
 def main():
   setup()

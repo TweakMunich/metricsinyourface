@@ -2,27 +2,27 @@
 
 # Manages a set of displays, accommodating scenarios like multiple
 # displays connected on a single shift register chain. Hardware control
-# is handled inside the display objects.
+# (i2c, shift regs) is handled inside the passed-in display objects.
 
-import time
- 
 class Displays:
 
   def __init__(self, displays):
-    """ pass an array defining the width for each display """
+    """ Pass an array of display objects. """
     self.displays = displays
     self.data = [""] * len(displays)
 
   def set(self, index, data):
+    """ Sets the content for one display, either integer or string."""
     self.data[index] = data
 
   def display(self):
+    """ Sends defined data to the displays. """
     count = 0
-    self.displays[0].start()
+    self.displays[0].start() # call only once to support shift chain
     for d in self.displays:
       d.output(self.data[count])
       count += 1
-    self.displays[0].latch()
+    self.displays[0].latch() # call only once to support shift chain
    
   def blank(self, index=-1):
     """ Blanks all displays or only the specified one. Call display()

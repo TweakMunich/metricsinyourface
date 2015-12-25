@@ -10,9 +10,21 @@
 # the number of digits they use. After each time the values are displayed 
 # the config is read and checked whether it changed. Therefore, new displays
 # can be added anytime or IDs can be changed.
+#
+# The code can work with 2 different display types, shift register or i2c.
+# You can combine shift registers for configuraiton with i2c displays.
+# - import sevenseg_i2c or sevenseg_shift
+# - change the calls to make_displays_xxx accordingly
+# - if not using shift regs for config, import readconfig_fake instead
+# - If using serisl displays, comment out the call to load_data in the loop
 
-import sevenseg
-import readconfig
+from sevenseg_i2c import SevenSegDisplay
+#from sevenseg_shift import SevenSegDisplay
+
+import readconfig_fake as readconfig
+#import readconfig as readconfig
+
+from display import Displays
 
 import json
 import time
@@ -32,44 +44,62 @@ def get_value(url):
     print("invalid value %s" %data["value"])
 
 def get_values(url, config):
-  """ Gets values for all defined displays contatenated into a single
-      string that can be shifted through the displays. Unknown values 
+  """ Gets values for all defined displays as a list. Unknown values 
       are indicated by 'u'. Returns None on connection problems. """
-  text = ""
+  data = []
   for display in config:
     digits = display[0]
     id = display[1]
-    # get the value from the cloud
     try:
+      # get the value from the cloud
       value = get_value(url.format(id))
       if value:
-        text = "{0: {width}}".format(value, width=digits)[-3:] + text
+        text = str(value)
       else:
         text = "_" * digits
+      data += [text]
     except(urllib2.URLError):
       return None
-  return text
+  return data
 
-def init():
-  """ Reads initial configuration and shows it on the displays. Call
-      only on start-up."""
-  # Reading config latches data, so fill it with something before
-  sevenseg.output_string("-." * 100)
-  config = readconfig.read_config()
+def display_config(disp, config):
+  """ Shows config info on the displays during start-up. """
+
   # Show number of digits for each display to confirm config is read
-  sevenseg.start_shift()
+  index = 0
   for c in config: 
-    sevenseg.send_str((str(c[0]) + '.') * c[0])
-  sevenseg.latch()
-  time.sleep(3)
+    disp.set(index, (str(c[0]) + '.') * c[0])
+    index += 1
+  disp.display()
+  time.sleep(2)
+
   # Show ID of each display
-  sevenseg.start_shift()
+  index = 0
   for c in config: 
-     sevenseg.send_str(str(c[1]).rjust(c[0], '.')[-c[0]:] + '.')
-   #  sevenseg.send_number(c[1], c[0])
-  sevenseg.latch()
-  time.sleep(3)
+    disp.set(index, str(c[1]).rjust(c[0], '.')[-c[0]:] + '.')
+    index += 1
+  disp.display()
+  time.sleep(2)
   return config
+
+def make_displays_shift(config):
+  """ Generates one shift reg display for each listed in config """
+
+  displays = []
+  for d in config:
+    displays += [SevenSegDisplay(d[0])]
+  if len(displays) > 0:
+    displays[0].setup()
+  return Displays(displays)
+
+def make_displays_i2c(config, address=0x70):
+  """ Generates one i2c display for each listed in config. Displays must
+       have i2c addresses in ascending order. """
+  displays = []
+  for d in config:
+    displays += [SevenSegDisplay(address = address)]
+    address += 1
+  return Displays(displays)
 
 def main():
   args=sys.argv
@@ -80,30 +110,39 @@ def main():
   url = "http://%s/getvalue?id=%s{0}" % ( 
         os.getenv("metricsinyourfaceurl", args[1]), 
         args[2])
-  sevenseg.setup()
+
+  # Note: if config circuit is not present, import readconfig_fake instead
   readconfig.setup()
-  config = init()
-  if not config:
-    config = [(3, 0)]  # Default: 1 display, 3 digits, ID 0
-  text = "uuu"
+  readconfig.load_data()
+  config = readconfig.read_config()
+  print config
+
+  disp = make_displays_i2c(config)
+  display_config(disp, config)
+
+  # Blink last decimal point to indicate data is fresh
   blink = False
 
   while (True):
-    t = get_values(url, config)
-    if t:
-      text = t
-      sevenseg.output_string(text + ('.' * blink))
+    data = get_values(url, config)
+    if data:
+      for i in range(len(data)):
+        disp.set(i, data[i] + ('.' * blink))
+      disp.display()
       blink = not blink
     else: 
       # Blink if cannot connect
       print("could not reach server")
-      sevenseg.output_string(" " * 100) # TODO; compute total num digits
+      disp.blank()
       time.sleep(.2)
-      sevenseg.output_string(text)
+      disp.display()
 
+    # check whether configuration changed (new display, different ID) 
+    readconfig.load_data() # remove with serial displays, display clock loads
     c = readconfig.read_config()
     if c and not c == config:
       config = c
+      disp = make_displays_i2c(c)
       print "new config: %i digits, ID = %i" % (config[0][0], config[0][1])
     else:
       time.sleep(2)

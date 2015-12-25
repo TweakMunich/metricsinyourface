@@ -6,6 +6,9 @@
 def setup():
   return None
 
+def load_data():
+  return None
+
 def read_config():
   """ returns a list of tupels indicating (num digits, ID) for each
       connected display. Hard coded to 4-digit displays pegged to 

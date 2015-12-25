@@ -5,6 +5,14 @@
 # sudo python sevenseg_i2c.py          -- count to 200
 #
 # Outputs decimal numbers to AdaFruit LED Backback 7 Segment display
+#
+# i2c must be enabled on the raspberry pi. If you don't see /dev/i2c-1 this
+# code can't work. 
+# Link from your current directory to the following driver files cloned from
+# https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code:
+#   Adafruit_I2C.py
+#   Adafruit_7Segment.py
+#   Adafruit_LEDBackpack.py
 
 import sevenseg
 

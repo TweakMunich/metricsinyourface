@@ -1,0 +1,30 @@
+language: ruby
+
+install: echo "party time"
+
+script: echo "nothing much to do for the moment." && true
+
+before_deploy:
+  - zip -r latest *
+  - mkdir -p dpl_cd_upload
+  - mv latest.zip dpl_cd_upload/latest.zip
+
+deploy:
+  - provider: s3
+    access_key_id: toedit
+    secret_access_key: &1
+      secure: toedit
+    local_dir: dpl_cd_upload
+    skip_cleanup: true
+    on: &2
+      repo: travis-ci/TweakMunich/metricsinyourface
+    bucket: metricsinyourfaceapplication
+  - provider: codedeploy
+    access_key_id: toedit
+    secret_access_key: *1
+    bucket: metricsinyourface
+    key: latest.zip
+    bundle_type: zip
+    application: metricsinyourfaceapplication
+    deployment_group: ProductionDemoFleet
+    on: *2

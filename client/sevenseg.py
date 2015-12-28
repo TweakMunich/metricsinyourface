@@ -1,153 +1,76 @@
 #! /usr/bin/python
 #
-# sudo python sevenseg.py <number> -- display number
-# sudo python sevenseg.py <text>   -- display text(very limited)
-# sudo python sevenseg.py          -- count to 200
-#
-# Outputs decimal numbers to 74HCT595 shift registers connected
-# to 7-Segment display vis 2803 darlington (Hi = on).
-
-import RPi.GPIO as GPIO
-import time
-import sys
-
-# IO Port definitions (not pins!)
-GPIO_SER  = 23 # serial data / MOSI (high bit first) - to 595 SER (14)
-GPIO_CLK = 24  # Serial clock / CLK (rising edge) - to 595 SRCLK (11)
-GPIO_RCLK = 18  # Register latch  / RESET (rising edge) - to 595 RCLK (12)
-
-NUM_BITS = 8    # Number of bits per digit
+# Converts digits and letters into corresponding 7-Segment encoding,
+# setting high bits for illuminated segments.
+# Deals with max display size, suppressing leading zeroes etc. 
 
 # 7 Segment coding a=bit0, b=bit1, ..., DP=bit7
+
 SEGMENTS = [0b00111111, 0b00000110, 0b01011011, 0b01001111, 0b01100110,
             0b01101101, 0b01111101, 0b00000111, 0b01111111, 0b01101111]
 SPECIAL = { 'u': 0b00011100, 'c': 0b01011000 , '_': 0b00001000 ,
             '-': 0b01000000, ' ': 0b00000000 }
 
-def setup():
-  GPIO.setmode(GPIO.BCM)
+def blank():
+  """ Returns 7-segment code for a blank. """
+  return 0
 
-  GPIO.setup(GPIO_SER, GPIO.OUT)
-  GPIO.setup(GPIO_CLK, GPIO.OUT)
-  GPIO.setup(GPIO_RCLK, GPIO.OUT)
+def digit(value, dp=False):
+  """ Returns 7-segment code for a digit with optional decimal point. """
+  return (SEGMENTS[value] | (0x80 * dp))
 
-  GPIO.output(GPIO_SER, GPIO.LOW)
-  GPIO.output(GPIO_CLK, GPIO.LOW)
-  GPIO.output(GPIO_RCLK, GPIO.LOW)
-
-def cleanup():
-  GPIO.cleanup()
-
-def start_shift():
-  GPIO.output(GPIO_RCLK, GPIO.LOW)
-
-def latch():
-  """ Latches data into outputs with high strobe (RCLK) """
-  GPIO.output(GPIO_RCLK, GPIO.LOW)
-  GPIO.output(GPIO_RCLK, GPIO.HIGH)
-  GPIO.output(GPIO_RCLK, GPIO.LOW)
-
-# The following methods shift sindgle bits, bytes or strings to the
-# Shift registers. Call start_shift() before and latch() after.
-
-def shift_bit(bit):
-  """ Shifts a single bit (true/false) to the serial buffer with
-      rising edge of CLK signal. """
-  GPIO.output(GPIO_SER, bit)
-  GPIO.output(GPIO_CLK, GPIO.LOW)
-  GPIO.output(GPIO_CLK, GPIO.HIGH)
-
-def send_raw(segments):
-  mask = 2**(NUM_BITS - 1)
-  for i in range(NUM_BITS):
-    shift_bit(int(segments) & int(mask) != 0)
-    mask = mask >> 1
-
-def send_digit(value, dp):
-  """ Outputs a single digit via serial shift out. High bit first. """
-  send_raw(SEGMENTS[value] | (0x80 * dp))
-
-def send_blank():
-  """ Sets a single digit display to blank (all LED off). """
-  for digit in range(NUM_BITS):
-    shift_bit(False)
-
-def send_char(value, dp=False):
+def char(value, dp=False):
+  """ Returns 7-segment code for a charter with optional decimal point """
   if value in ['0','1','2','3','4','5','6','7','8','9']:
-    send_digit(int(value), dp)
+    return digit(int(value), dp)
   elif value in SPECIAL:
-    send_raw(SPECIAL[value] | (0x80 * dp))
+    return (SPECIAL[value] | (0x80 * dp))
 
-def send_str(value):
-  """ Outputs a string consisting of digits or blanks onto 7-segment display.
-      Periods are treated special in that they add a decimal point to the
-      preceding digit. A decimal point at the start renders a space with dp."""
+def text(value, digits):
+  """ Returns an array of 7-segment codings corresponding to a string or an
+      integer number.
+
+      If the string is shorter than the specified digits, it is padded on 
+      the left. If it is longer, only the rightmost characters are included.
+
+      Periods are not separate characters but add a decimal point to the
+      preceding character. To just print a period, specify " .".  A decimal
+      point at the beginning of value renders a space with dp."""
+  value = str(value)
+  result = []
   c1 = None
   for c in value:
     if c == '.':
-      send_char(c1 if c1 else ' ', True)
+      result += [char(c1 if c1 else ' ', True)]
       c1 = None
     else:
       if c1:
-        send_char(c1)
+        result += [char(c1)]
       c1 = c
   if c1:
-    send_char(c1)
+    result += [char(c1)]
+  result = result[-digits:]
+  while len(result) < digits:
+    result = [blank()] + result
+  return result
 
-def send_number(value, digits):
-  """ Outputs an integer number onto 7-segment display. 
-      Supresses leading zeros. If width is insufficient,
-      displays last (least significant) digits."""
-  text = "{0: {width}}".format(value, width=digits)[-digits:]
-  output_string(text)
-
-def send_blanks(digits):
+def blanks(digits):
   """ Blanks the display (all LED off). """
-  for digit in range(digits):
-    send_blank()
-
-# The following methods send data and latch it to the display. 
-# Each call must specify all values for all displays.
-# Mostly provided for convenience if only one display is connected.
-
-def output_string(text):
-  """ Outputs a string consisting of digits or blanks onto 7-segment display.
-      Can be used for single display or multiple displays if the string 
-      contains the correct number of characters for each display."""
-  start_shift()
-  send_str(text)
-  latch()
-
-def output_number(value, digits):
-  """ Outputs an integer value onto a 7-segment display of the specified width. 
-      Supresses leading zeros. If width is insufficient, displays the last 
-      (least significant) digits."""
-  start_shift()
-  send_number(value,digits)
-  latch()
-
-def blank(digits):
-  """ Blanks the display. """
-  start_shift()
-  send_blank(digits)
-  latch()
+  return [blank()] * digits
 
 def main():
-  setup()
-  args=sys.argv
-  digits = 3 # should be read from config
-
-  if len(args) < 2:
-    for num in range(0,200):
-      output_number(num, digits)
-      time.sleep(0.1)
-  elif args[1].isdigit():	
-    output_number(int(args[1]), digits)
-  else:
-    output_string(args[1])
-
-  # resetting GPIO messes up display
-  cleanup()
+  """ Poor man's unit tests """
+  print "{0:08b}".format(blank())
+  print "{0:08b}".format(digit(1))
+  print "{0:08b}".format(digit(1, True))
+  print text('1', 4)
+  print text('1.', 4)
+  print text('.', 4)
+  print text('1.1.1.1.', 4)
+  print text('21111', 4)
+  print text(111, 4)
+  print text(11111, 4)
 
 if __name__ == "__main__":
   main()
+

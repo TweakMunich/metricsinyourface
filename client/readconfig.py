@@ -1,6 +1,15 @@
 #! /usr/bin/python
 #
-# Reads configuration input from shift register.
+# Reads configuration input from shift registers. Multiple shift registers
+# can be chained analog to the displays with 16 bits per display.
+#
+# For each display, a 16 bit shift register must report the config:
+# bit 0-11  = display ID (0-2048), inverted (e.g. all bits high is ID 0)
+# bit 12    = unused (use to switch common anode / cathode?)
+# bit 13-15 = number digits - 1 (e.g. 0b011 = 4 digits)
+#
+# The serial input is pulled high, so the end of the shift chain is detected
+# by the top 3 bits being 0b111, which is not allowed for the size bits
 
 import RPi.GPIO as GPIO
 import time
@@ -17,6 +26,7 @@ NUM_BITS = 8    # Bits in each digit
 NUM_DIGITS = [2, 3, 4, 6]
 
 def setup():
+  """ sets up IO pins into proper mode. """
   GPIO.setmode(GPIO.BCM)
 
   GPIO.setup(GPIO_MISO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -49,12 +59,12 @@ def read_byte():
 def read_config():
   """ returns a list of tupels indicating (num digits, ID) for each
       connected display. Configs are detected by at least one of the
-      highest 3 bits, which indicate the number of digits, to 0."""
+      highest 3 bits (number of digits) being set to 0."""
   result = []
   while(True):
     lo = read_byte()
     hi = read_byte()
-    #print "hi %i lo %i" % (hi, lo)
+    # print "hi %i lo %i" % (hi, lo)
     digits = ((hi & 0xE0) >> 5) + 1
     id = ((hi & 0x0f) << 8 | lo) ^ 0xFFF
     if digits == 8:
@@ -64,10 +74,13 @@ def read_config():
 def main():
   setup()
   load_data()
-  value1 = read_byte()
-  value2 = read_byte()
-  print "%x" % (value1 ^ 0xff) 
-  print "%x" % (value2 ^ 0xff) 
+  config = read_config()
+  print config
+
+  #lo = read_byte()
+  #hi = read_byte()
+  #print "%x" % (lo ^ 0xff) 
+  #print "%x" % (hi ^ 0xff) 
   # cleanup()
 
 if __name__ == "__main__":

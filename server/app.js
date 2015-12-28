@@ -18,12 +18,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 var array = [];
+// Persist storage
+var storage = require('node-persist');
+//you must first call storage.init or storage.initSync 
+storage.initSync();
+
 
 app.post('/setValue', function (req, res) {
     var id = req.body.id;
     var value = req.body.value;
     if (id && value) {
-      array[id] = value;
+      //array[id] = value;
+      storage.setItem(id, value);
       res.send(id + ': ' + value);
     } else {
       res.status(400).send('must post "id" and "value"');
@@ -32,8 +38,11 @@ app.post('/setValue', function (req, res) {
 
 app.get('/getValue', function (req, res) {
     if(req.param("id")) {
+        // res.send({"id" : req.param("id"),
+        //         "value" : array[req.param("id")]});
+
         res.send({"id" : req.param("id"),
-                "value" : array[req.param("id")]});
+                "value" : storage.getItem(req.param("id"))});
     }
 });
 

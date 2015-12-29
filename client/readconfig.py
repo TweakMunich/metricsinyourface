@@ -62,8 +62,8 @@ def read_config():
       highest 3 bits (number of digits) being set to 0."""
   result = []
   while(True):
-    lo = read_byte()
     hi = read_byte()
+    lo = read_byte()
     # print "hi %i lo %i" % (hi, lo)
     digits = ((hi & 0xE0) >> 5) + 1
     id = ((hi & 0x0f) << 8 | lo) ^ 0xFFF

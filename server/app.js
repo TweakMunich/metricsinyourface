@@ -51,12 +51,13 @@ function getValue(req, res) {
     }
 }
 
-// save in monitor storage last time a request was received by a client
+// save in monitor storage last time (in UTC) a request was received by a client and the metric
+// using a JSON like {"metric":"1","tStamp":"2016-01-02T19:30:20.234Z"}
 function setMonitor(req, res, next) {
-	id = req.headers['x-client-id'];
-	if(id){
-		value = {hostname: req.hostname, url : req.originalUrl, body : req.body, headers : req.hearders, tStamp: new Date() };
-		monitor.setItem(id, value);
+	hostname = req.headers['hostname'];
+	id = req.param("id");
+	if(id && hostname){
+		monitor.setItem(hostname, {metric : id , tStamp: new Date() } );
 	}
 	next();
 }

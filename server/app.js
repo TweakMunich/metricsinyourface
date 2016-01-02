@@ -55,7 +55,7 @@ function getValue(req, res) {
 function setMonitor(req, res, next) {
 	id = req.headers['x-client-id'];
 	if(id){
-		value = {last: new Date()};
+		value = {hostname: req.hostname, url : req.originalUrl, body : req.body, headers : req.hearders, tStamp: new Date() };
 		monitor.setItem(id, value);
 	}
 	next();

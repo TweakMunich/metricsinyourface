@@ -75,7 +75,7 @@ app.post('/setValue', setValue);
 
 app.get('/getValue', setMonitor, getValue);
 
-app.get('/getMonitor', getMonitor );
+app.get('/monitor', getMonitor );
 
 app.use(express.static('static'));
 

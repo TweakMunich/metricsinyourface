@@ -1,15 +1,15 @@
 # metricsinyourface
 
-An IoT project for a Raspberry PI that pulls data from the cloud and displays it in a seven-segment display. Each Pi can drive multiple displays that can be daisy-chained together. Each data display has a configurable ID and number of digits, both of which are read by the Pi.
+An IoT project for a Raspberry PI that pulls data from the cloud and displays it in a seven-segment display. Each Pi can drive multiple displays that can be daisy-chained together. Each data display has a configurable ID and number of digits, both of which are read by the Pi via shift register.
 
 
 ## Client Code
 
 The `client` folder contains the code running in the Pi. To execute: 
 
-    sudo python domainname:port valueprefix
+    sudo python display_metric.py domainname:port valueprefix
 
-The Pi will retrieve values with the `valueprefix` concatenated with the display ID. For example if `valueprefix` is `foo` and a display with the ID 3 is connected to the Pi, it will look for the value of the parameter `foo3`.
+The Pi will retrieve values from the server based on an ID that is the concatenation of `valueprefix` and  the display ID, which is read from the switch on the display. For example if `valueprefix` is `foo` and a display with the ID 3 is connected to the Pi, it will look for the value of the parameter `foo3`.
 
 
 ## Server-side code

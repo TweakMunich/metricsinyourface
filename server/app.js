@@ -20,31 +20,61 @@ app.use(bodyParser.urlencoded({ extended: true }));
 var array = [];
 // Persist storage
 var storage = require('node-persist');
+// flag for logging storage actions for debug
+var logging = true;
+// storage folder 
+var storageBaseDir = __dirname +'/storage';
 //you must first call storage.init or storage.initSync 
-storage.initSync();
+var metrics = storage.create({logging: true, dir: storageBaseDir + '/metrics'});
+metrics.initSync();
+var monitor = storage.create({logging: true, dir: storageBaseDir + '/monitor'});
+monitor.initSync();
 
-
-app.post('/setValue', function (req, res) {
-    var id = req.body.id;
+// set value in metrics storage
+function setValue(req, res){
+	var id = req.body.id;
     var value = req.body.value;
     if (id && value) {
       //array[id] = value;
-      storage.setItem(id, value);
+      metrics.setItem(id, value);
       res.send(id + ': ' + value);
     } else {
       res.status(400).send('must post "id" and "value"');
     }
-});
+};
 
-app.get('/getValue', function (req, res) {
+// get a value from metrics storage
+function getValue(req, res) {
     if(req.param("id")) {
-        // res.send({"id" : req.param("id"),
-        //         "value" : array[req.param("id")]});
-
         res.send({"id" : req.param("id"),
-                "value" : storage.getItem(req.param("id"))});
+                "value" : metrics.getItem(req.param("id"))});
     }
-});
+}
+
+// save in monitor storage last time a request was received by a client
+function setMonitor(req, res, next) {
+	id = req.headers['x-client-id'];
+	if(id){
+		value = {last: new Date()};
+		monitor.setItem(id, value);
+	}
+	next();
+}
+
+// retrieve all monitor data from monitor storage
+function getMonitor(req, res){
+	result = {};
+	monitor.forEach(function(key,value){
+		result[key] = value;
+	});
+	res.status(200).send(result);
+}
+
+app.post('/setValue', setValue);
+
+app.get('/getValue', setMonitor, getValue);
+
+app.get('/getMonitor', getMonitor );
 
 app.use(express.static('static'));
 

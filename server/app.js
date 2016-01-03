@@ -25,9 +25,9 @@ var logging = true;
 // storage folder 
 var storageBaseDir = __dirname +'/storage';
 //you must first call storage.init or storage.initSync 
-var metrics = storage.create({logging: true, dir: storageBaseDir + '/metrics'});
+var metrics = storage.create({"logging": logging, "dir": storageBaseDir + '/metrics'});
 metrics.initSync();
-var monitor = storage.create({logging: true, dir: storageBaseDir + '/monitor'});
+var monitor = storage.create({"logging": logging, "dir": storageBaseDir + '/monitor'});
 monitor.initSync();
 
 // identifier of the reserved system domain
@@ -91,7 +91,7 @@ function write(req, res){
 	else{
 		if (path.id && value) {
 	      key = _createKey(path.domain,path.id);
-	      metrics.setItem(key, {"value":value, lastUpdateDt: new Date()});
+	      metrics.setItem(key, {"value":value, "lastUpdateDt": new Date()});
 	      res.send(_format(path,value));
 	    } else {
 	      res.status(400).send('must post "id" and "value"');
@@ -119,12 +119,12 @@ function read(req, res) {
 
 
 // save in monitor storage last time (in UTC) a request was received by a client and the metric
-// using a JSON like {"metric": "/:domain/:id","tStamp":"2016-01-02T19:30:20.234Z"}
+// using a JSON like {version: "1", "metric": "domain_id","lastUpdateDt":"2016-01-02T19:30:20.234Z"}
 function heartbeat(req, res, next) {
 	hostname = req.headers['hostname'];
 	path = _parse(req);
 	if(hostname && path.id){
-		monitor.setItem(hostname, {"version": path.version, "metric" : _createKey(path.domain, path.id) , "tStamp": new Date() } );
+		monitor.setItem(hostname, {"version": path.version, "metric" : _createKey(path.domain, path.id) , "lastUpdateDt": new Date() } );
 	}
 	next();
 }
@@ -143,7 +143,7 @@ function stats(req, res, next) {
 			count = 0;
 			now = new Date();
 			monitor.forEach(function(key,value){
-			  tstamp = value.tStamp;
+			  tstamp = value.lastUpdateDt;
 			  if(now-tstamp<=60000) 
 				  count++;
 			});

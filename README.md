@@ -39,9 +39,13 @@ We are currently using the header *hostname* to identify the client.
 
 #### System domain
 System domain provides administrative/monitoring/test functions.  Current ID supported are ID = 1 and ID = 2.
+
 System ID = 1 returns the number of clients known
+
 System ID = 2 returns the number of active clients in the last 60 seconds 
-Trying to with GET access to an ID different from the known one returns an error code 404 (not found)
+
+Trying to GET access to an ID different from the known one returns an error code 404 (not found)
+
 System domain with ID = 1 and 2 can only be queried, a POST on with prefix = 'system' returns 403 (forbidden) 
 
 

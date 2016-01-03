@@ -30,6 +30,9 @@ metrics.initSync();
 var monitor = storage.create({logging: true, dir: storageBaseDir + '/monitor'});
 monitor.initSync();
 
+// identifier of the reserved system domain
+var SYSTEM_DOMAIN = "system";
+
 //*****************************************
 //		UTILITY FUNCTIONS
 //*****************************************
@@ -82,13 +85,18 @@ function write(req, res){
 	
     var value = req.body.value;
 
-	if (path.id && value) {
-      key = _createKey(path.domain,path.id);
-      metrics.setItem(key, {"value":value, lastUpdateDt: new Date()});
-      res.send(_format(path,value));
-    } else {
-      res.status(400).send('must post "id" and "value"');
-    }
+	// do not allow client to post on system domain
+	if( path.domain == SYSTEM_DOMAIN )
+		res.status(403).send();
+	else{
+		if (path.id && value) {
+	      key = _createKey(path.domain,path.id);
+	      metrics.setItem(key, {"value":value, lastUpdateDt: new Date()});
+	      res.send(_format(path,value));
+	    } else {
+	      res.status(400).send('must post "id" and "value"');
+	    }
+	}
 };
 
 // get a value from metrics storage only if ID is not empty
@@ -124,7 +132,7 @@ function heartbeat(req, res, next) {
 // check if prefix is 'system' and managed metrics for system channels 1 and 2 
 function stats(req, res, next) {
 	path = _parse(req);
-	if(path.domain == "system")
+	if(path.domain == SYSTEM_DOMAIN)
 	{		
 		if(path.id=="1")
 		{

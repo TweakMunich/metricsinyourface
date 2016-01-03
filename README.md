@@ -20,5 +20,28 @@ To make it run on your machine, execute : `npm install`, then `node app.js`. A d
 
 The server can easily run on AWS Beanstalk: create a zip from the file contained in the server folder after having done an 'npm install' and follow the instruction on AWS Beanstalk wizard.
 
+### API version 1
+Set value with HTTP POST (if domain is missing, it is defaulted to *undefined*):
+*curl -v -H "Content-Type: application/json" -X POST -d  '{"domain": "testdomain", "id":"testid", "value":"200"}' http://myhost:3000/setValue*
+
+Get Value with HTTP GET or directly from browser (if domain is missing, it is defaulted to *undefined*): 
+*curl -v http://myhost:3000/getValue?id=testpi&domain=testdomain*
+
+### API version 1
+Set value with HTTP POST:
+*curl -v -H "Content-Type: application/json" -X POST -d  '{"value":"200"}' http://myhost:3000/:domain/:id*
+
+Get Value with HTTP GET or directly from browser: 
+*curl http://myhost:3000/:doman/:id* 
+
+### Client identifier
+We are currently using the header *hostname* to identify the client.
+
+### System domain
+System domain provides administrative/monitoring/test functions.  Current ID supported are ID = 1 and ID = 2.
+System ID = 1 returns the number of clients known
+System ID = 2 returns the number of active clients in the last 60 seconds 
+Trying to with GET access to an ID different from the known one returns an error code 404 (not found)
+System domain with ID = 1 and 2 can only be queried, a POST on with prefix = 'system' returns 403 (forbidden) 
 
 

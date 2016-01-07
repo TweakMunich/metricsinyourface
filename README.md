@@ -22,17 +22,29 @@ The server can easily run on AWS Beanstalk: create a zip from the file contained
 
 #### API version 1
 Set value with HTTP POST (if domain is missing, it is defaulted to *undefined*):
-*curl -v -H "Content-Type: application/json" -X POST -d  '{"domain": "testdomain", "id":"testid", "value":"200"}' http://myhost:3000/setValue*
+
+```
+curl -v -H "Content-Type: application/json" -X POST -d  '{"domain": "testdomain", "id":"testid", "value":"200"}' http://myhost:3000/setValue
+```
 
 Get Value with HTTP GET or directly from browser (if domain is missing, it is defaulted to *undefined*): 
-*curl -v http://myhost:3000/getValue?id=testpi&domain=testdomain*
+    
+```
+curl -v http://myhost:3000/getValue?id=testpi&domain=testdomain
+```
 
 #### API version 2
 Set value with HTTP POST:
-*curl -v -H "Content-Type: application/json" -X POST -d  '{"value":"200"}' http://myhost:3000/:domain/:id*
+
+```
+curl -v -H "Content-Type: application/json" -X POST -d  '{"value":"200"}' http://myhost:3000/:domain/:id
+```
 
 Get Value with HTTP GET or directly from browser: 
-*curl http://myhost:3000/:doman/:id* 
+
+```
+curl http://myhost:3000/:doman/:id
+```
 
 #### Client identifier
 We are currently using the header *hostname* to identify the client.

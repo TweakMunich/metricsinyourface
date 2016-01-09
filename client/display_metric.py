@@ -33,15 +33,17 @@ import sys
 import urllib2
 
 def get_value(url):
-  """ Fetches a single value from host. Returns None if value is undefined
-      or not numeric. Throws urllib2.URLError on connection problems."""
+  """ Fetches a single string value from host. 
+       Returns None if value is undefined.
+       Throws urllib2.URLError on connection problems."""
   try:
     response = urllib2.urlopen(url)
     data = json.loads(response.read().decode('utf-8'))
     if "value" in data:
-      return int(data["value"])
+      return data["value"]
   except(ValueError):
     print("invalid value %s" %data["value"])
+    return None
 
 def get_values(url, config):
   """ Gets values for all defined displays as a list. Unknown values 

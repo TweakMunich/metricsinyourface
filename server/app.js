@@ -40,35 +40,35 @@ var SYSTEM_DOMAIN = "system";
 // parse the request path and break it down into components, identifying version, domain, id
 function _parse(req){
   path = req.path.split("/");
-  if(path.length == 4 && path[1] == "api"){
-	domain = path[2];
-  	id = path[3];
-	return {"version": "2", "domain":path[2], "id":path[3]};  	
+  if (path.length == 4 && path[1] == "api"){
+    domain = path[2];
+    id = path[3];
+    return {"version": "2", "domain": path[2], "id": path[3]};  	
   }
-  else if(path.length == 2 && path[1] == "setValue"){
-	domain = req.body.domain;
-	if(!domain) domain = "undefined";
-	id = req.body.id;
-  	return {"version": "1", "domain":domain, "id":id};  	
+  else if (path.length == 2 && path[1] == "setValue"){
+    domain = req.body.domain;
+    if (!domain) domain = "undefined";
+    id = req.body.id;
+    return {"version": "1", "domain": domain, "id": id};  	
   }
-  else if(path.length == 2 && path[1] == "getValue"){
-	domain = req.param("domain");
-	if(!domain) domain = "undefined";
-	id = req.param("id");
-  	return {"version": "1", "domain":domain, "id":id};  	
+  else if (path.length == 2 && path[1] == "getValue"){
+    domain = req.param("domain");
+    if (!domain) domain = "undefined";
+    id = req.param("id");
+    return {"version": "1", "domain": domain, "id": id};  	
   }
   else 
-	return {"version": "na", "domain":"", "id":""};
+    return {"version": "na", "domain":"", "id":""};
 }
 
 // the key is generated as concatenation of <domain> + '_' + <id>
 function _createKey( domain, id){
-	return ""+domain + "_" + id;
+  return "" + domain + "_" + id;
 }
 
-// build the response JSON as {"domain":domain, "id":id,"value":value}
+// build the response JSON as {"domain":domain, "id":id, "value":value}
 function _format(path, value){
-	return {"domain":path.domain,"id":path.id, "value":value};
+  return {"domain":path.domain, "id":path.id, "value":value};
 }
 
 
@@ -78,55 +78,57 @@ function _format(path, value){
 
 // set value in metrics storage
 function write(req, res){
-	path = _parse(req);
+  path = _parse(req);
 	
-	if(path.version == "1" && !req.body.domain)
-			path.domain =  req.body.domain;
+  if (path.version == "1" && !req.body.domain)
+    path.domain =  req.body.domain;
 	
-    var value = req.body.value;
+  var value = req.body.value;
 
-	// do not allow client to post on system domain
-	if( path.domain == SYSTEM_DOMAIN )
-		res.status(403).send();
-	else{
-		if (path.id && value) {
-	      key = _createKey(path.domain,path.id);
-	      metrics.setItem(key, {"value":value, "lastUpdateDt": new Date()});
-	      res.send(_format(path,value));
-	    } else {
-	      res.status(400).send('must post "id" and "value"');
-	    }
-	}
+  // do not allow client to post on system domain
+  if( path.domain == SYSTEM_DOMAIN ) {
+    res.status(403).send();
+  }
+  else {
+    if (path.id && value) {
+      key = _createKey(path.domain, path.id);
+      metrics.setItem(key, {"value":value, "lastUpdateDt": new Date()});
+      res.send(_format(path,value));
+    } else {
+      res.status(400).send('must post "id" and "value"');
+    }
+  }
 };
 
 // get a value from metrics storage only if ID is not empty
 function read(req, res) {
-	path = _parse(req);
-	console.log(path);
-    if(path.id) {
-	    key = _createKey(path.domain,path.id);
-		value = metrics.getItem(key);
-		if(value)
-        	res.send(_format(path,value.value));
-		else
-			res.status(404).send();
-    }
-	else
-	{
-		res.send("Malformed request!");
-	}
+  path = _parse(req);
+  console.log(path);
+  if (path.id) {
+    key = _createKey(path.domain, path.id);
+    value = metrics.getItem(key);
+    if (value)
+      res.send(_format(path,value.value));
+    else
+      res.status(404).send();
+   }
+   else {
+     res.send("Malformed request!");
+   }
 }
 
 
-// save in monitor storage last time (in UTC) a request was received by a client and the metric
+// Save last time (in UTC) a request was received by a client and the metric
 // using a JSON like {version: "1", "metric": "domain_id","lastUpdateDt":"2016-01-02T19:30:20.234Z"}
 function heartbeat(req, res, next) {
-	hostname = req.headers['hostname'];
-	path = _parse(req);
-	if(hostname && path.id){
-		monitor.setItem(hostname, {"version": path.version, "metric" : _createKey(path.domain, path.id) , "lastUpdateDt": new Date() } );
-	}
-	next();
+  hostname = req.headers['remote_host'];
+  path = _parse(req);
+  if (hostname && path.id){
+    monitor.setItem(hostname, {"version": path.version, 
+                               "metric" : _createKey(path.domain, path.id),
+                               "lastUpdateDt": new Date() } );
+  }
+  next();
 }
 
 // check if prefix is 'system' and managed metrics for system channels 1 and 2 

@@ -27,25 +27,27 @@ import readconfig as readconfig
 from display import Displays
 
 import json
-import time
 import os
+import socket
 import sys
+import time
 import urllib2
 
-def get_value(url):
+def get_value(url, hostname):
   """ Fetches a single string value from host. 
        Returns None if value is undefined.
        Throws urllib2.URLError on connection problems."""
   try:
-    response = urllib2.urlopen(url)
+    req = urllib2.Request(url) 
+    req.add_header("REMOTE_HOST", hostname)
+    response = urllib2.urlopen(req)
     data = json.loads(response.read().decode('utf-8'))
     if "value" in data:
       return data["value"]
   except(ValueError):
-    print("invalid value %s" %data["value"])
     return None
 
-def get_values(url, config):
+def get_values(url, hostname, config):
   """ Gets values for all defined displays as a list. Unknown values 
       are indicated by 'u'. Returns None on connection problems. """
   data = []
@@ -54,13 +56,16 @@ def get_values(url, config):
     id = display[1]
     try:
       # get the value from the cloud
-      value = get_value(url.format(id))
+      value = get_value(url.format(id), hostname)
       if value or value == 0:
         text = str(value)
       else:
         text = "_" * digits
       data += [text]
-    except(urllib2.URLError):
+    except urllib2.HTTPError as e:
+      data += ["_" * digits]
+    except urllib2.URLError as e:
+      # if there is a connection problem, don't try again
       return None
   return data
 
@@ -109,9 +114,14 @@ def main():
     print "usage %s url metric_id" % args[0]
     sys.exit()
  
-  url = "http://%s/getvalue?id=%s{0}" % ( 
+  url = "http://%s/getValue?id=%s{0}" % ( 
         os.getenv("metricsinyourfaceurl", args[1]), 
         args[2])
+#  url = "http://%s/%s/{0}" % ( 
+#        os.getenv("metricsinyourfaceurl", args[1]), 
+#        args[2])
+
+  hostname = socket.gethostname()
 
   # Note: if config circuit is not present, import readconfig_fake instead
   readconfig.setup()
@@ -126,7 +136,7 @@ def main():
   blink = False
 
   while (True):
-    data = get_values(url, config)
+    data = get_values(url, hostname, config)
     if data:
       for i in range(len(data)):
         disp.set(i, data[i] + ('.' * blink))

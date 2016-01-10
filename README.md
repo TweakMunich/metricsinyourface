@@ -1,15 +1,23 @@
 # metricsinyourface
 
-An IoT project for a Raspberry PI that pulls data from the cloud and displays it in a seven-segment display. Each Pi can drive multiple displays that can be daisy-chained together. Each data display has a configurable ID and number of digits, both of which are read by the Pi via shift register.
+A simple IoT project that pulls data from the cloud and displays it on a seven-segment display. Seven-segment displays are a bit retro but very easy to read and more attention-getting than a tablet or small screen. Also, you can connect very large displays up to 10cm.
 
+One or more displays, each with a configurable ID or "Channel", are connected to a Raspberry Pi, which fetches data from teh cloud and updates the display. Integer or floating point numbers plus a few special characters can be displayed.
+
+## Hardware
+To preserve the number of GPIO ports used, input and output occurs via shift registers ('595 for output, '166 for input) or I2C bus. 
+
+* Serial input: Each display's configurable ID and number of digits can be read from chained shift registers, 16 bits per display. Bits 0-11 are the display ID (aka "channel"), Bits 13-15 specify the number of digits (000 = 1, 110 = 7, 111 not allowed), Bit 12 is not used. 
+* Serial Display: Large displays can be driven via chained shift registers, 8 bits per digit. The Pi shifts the correct number of digits for each display so that they can be chained together without addressing.
+* I2C Display: To simplify soldering you can connect 4-digit I2C displays from Adafruit. 
 
 ## Client Code
 
 The `client` folder contains the code running in the Pi. To execute: 
 
-    sudo python display_metric.py domainname:port valueprefix
+    sudo python display_metric.py url domain
 
-The Pi will retrieve values from the server based on an ID that is the concatenation of `valueprefix` and  the display ID, which is read from the switch on the display. For example if `valueprefix` is `foo` and a display with the ID 3 is connected to the Pi, it will look for the value of the parameter `foo3`.
+The Pi retrieves values to be displayed from the server based on the display ID and the `domain` string. For example if `valueprefix` is `foo` and a display with the ID 3 is connected to the Pi, it will look for the value of the parameter `foo3`.
 
 
 ## Server-side code
@@ -43,18 +51,17 @@ curl -v -H "Content-Type: application/json" -X POST -d  '{"value":"200"}' http:/
 Get Value with HTTP GET or directly from browser: 
 
 ```
-curl http://myhost:3000/:doman/:id
+curl http://myhost:3000/api/:domain/:id
 ```
 
 #### Client identifier
-We are currently using the header *hostname* to identify the client.
+The server is using the header *remote_host* to identify the client.
 
 #### System domain
-System domain provides administrative/monitoring/test functions.  Current ID supported are ID = 1 and ID = 2.
+The `system` domain provides administrative/monitoring/test functions.  The following ID's are currently supported:
 
-System ID = 1 returns the number of clients known
-
-System ID = 2 returns the number of active clients in the last 60 seconds 
+* 1 returns the number of clients known
+* 2 returns the number of clients that were active in the last 60 seconds 
 
 Trying to GET access to an ID different from the known one returns an error code 404 (not found)
 

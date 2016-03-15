@@ -28,18 +28,22 @@ def postData(host, id, value):
 
 def main():
   args = sys.argv
-  if len(args) < 3:
-    print "usage %s host facebook_page" % args[0]
+  if len(args) < 2:
+    print "usage %s facebook_page [host]" % args[0]
     sys.exit()
 
-  host = args[1]
-  page = args[2]
+  page = args[1]
+  if len(args) > 2:
+    host = args[2]
+  else:
+    host = None
 
   likes = getLikes(page)
   if likes:
     value = "%.1f" % (likes / 1000.0)
     print value
-    postData(host, "testpi7", value)
+    if host:
+      postData(host, "testpi7", value)
 
 if __name__ == "__main__":
   main()

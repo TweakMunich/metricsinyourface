@@ -12,11 +12,11 @@
 # can be added anytime or IDs can be changed.
 #
 # The code can work with 2 different display types, shift register or i2c.
-# You can combine shift registers for configuraiton with i2c displays.
+# You can combine shift registers for configuration with i2c displays.
 # - import sevenseg_i2c or sevenseg_shift
 # - change the calls to make_displays_xxx accordingly
-# - if not using shift regs for config, import readconfig_fake instead
-# - If using serisl displays, comment out the call to load_data in the loop
+# - if not using shift register for config, import readconfig_fake instead
+# - If using shift register displays, comment out the call to load_data in the loop
 
 #from sevenseg_i2c import SevenSegDisplay
 from sevenseg_shift import SevenSegDisplay
@@ -150,7 +150,7 @@ def main():
       disp.display()
 
     # check whether configuration changed (new display, different ID) 
-    # readconfig.load_data() # remove with serial displays, display clock loads
+    readconfig.load_data() # remove with shift register displays, display clock loads
     c = readconfig.read_config()
     if c and not c == config:
       config = c

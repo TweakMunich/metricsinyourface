@@ -135,6 +135,10 @@ def main():
 
   # Blink last decimal point to indicate data is fresh
   blink = False
+
+  data = []
+  disp_data = []
+  disp_offset = 0
   
   def display_rolling():
     while (True):
@@ -148,9 +152,6 @@ def main():
       disp.display()
       time.sleep(0.5)
 
-  data = []
-  disp_data = []
-  disp_offset = 0
   disp_lock = threading.Lock()
   disp_thread = threading.Thread(target=display_rolling)
   disp_thread.start()

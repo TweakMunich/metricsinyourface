@@ -143,11 +143,14 @@ def main():
     disp_data_old = []
     while (True):
       disp_lock.acquire()
+
+      while len(disp_data_old) < len(disp_data):
+        disp_data_old.append("")
+
       for i in range(len(disp_data)):
-        if len(disp_data_old) < i or disp_data_old[i] != disp_data[i]:
+        if (disp_data_old[i] != disp_data[i]):
           disp_data_old[i] = disp_data[i]
           disp_offset[i] = 0
-
         d = data[i][:len(disp_data[i]) - disp_offset[i]]
         print("Data=" + d )
         disp.set(i, d + ('.' * blink))

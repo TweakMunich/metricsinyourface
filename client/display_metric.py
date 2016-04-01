@@ -138,6 +138,7 @@ def main():
   
   def display_rolling():
     disp_lock.acquire()
+    print("Updating display data")
     for i in range(len(disp_data)):
       disp.set(i, data[i] + ('.' * blink))
     disp_lock.release()

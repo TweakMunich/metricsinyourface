@@ -136,11 +136,6 @@ def main():
   # Blink last decimal point to indicate data is fresh
   blink = False
   
-  disp_data = []
-  disp_lock = threading.Lock()
-  disp_thread = threading.Thread(target=display_rolling)
-  disp_thread.start()
-  
   def display_rolling():
     disp_lock.acquire()
     for i in range(len(disp_data)):
@@ -148,6 +143,11 @@ def main():
     disp_lock.release()
     disp.display()
     time.sleep(0.5)
+
+  disp_data = []
+  disp_lock = threading.Lock()
+  disp_thread = threading.Thread(target=display_rolling)
+  disp_thread.start()
 
   while (True):
     data = get_values(url, hostname, config)

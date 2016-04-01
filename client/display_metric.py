@@ -155,13 +155,13 @@ def main():
           disp_data_old[i] = disp_data[i]
           disp_offset[i] = 0
         dd = disp_data[i]
-        dd = dd + "  " + dd
+        dd = dd + " " * 4
         di = disp_offset[i]
         d = dd[di:di+3]
         print("Data=" + d )
         disp.set(i, d + ('.' * blink))
         disp_offset[i] += 1
-        if len(dd) < 5 or disp_offset[i] > len(dd) - 5:
+        if len(dd) < 5 or disp_offset[i] > len(dd) - 4:
           disp_offset[i] = 0
       
       disp_lock.release()

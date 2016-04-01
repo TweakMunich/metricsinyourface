@@ -140,13 +140,15 @@ def main():
     while (True):
       disp_lock.acquire()
       for i in range(len(disp_data)):
-        disp.set(i, data[i] + ('.' * blink))
+        disp.set(i, data[i][:-disp_offset] + ('.' * blink))
+      #disp_offset += 1
       disp_lock.release()
       disp.display()
       time.sleep(0.5)
 
   data = []
   disp_data = []
+  disp_offset = 0
   disp_lock = threading.Lock()
   disp_thread = threading.Thread(target=display_rolling)
   disp_thread.start()

@@ -32,6 +32,7 @@ import socket
 import sys
 import time
 import urllib2
+import threading
 
 def get_value(url, hostname):
   """ Fetches a single string value from host. 
@@ -134,13 +135,26 @@ def main():
 
   # Blink last decimal point to indicate data is fresh
   blink = False
+  
+  disp_data = []
+  disp_lock = Lock()
+  disp_thread = Thread(target=display_rolling)
+  disp_thread.start()
+  
+  def display_rolling():
+    disp_lock.acquire()
+    for i in range(len(disp_data)):
+      disp.set(i, data[i] + ('.' * blink))
+    disp_lock.release()
+    disp.display()
+    time.sleep(0.5)
 
   while (True):
     data = get_values(url, hostname, config)
     if data:
-      for i in range(len(data)):
-        disp.set(i, data[i] + ('.' * blink))
-      disp.display()
+      disp_lock.acquire()
+      disp_data = data
+      disp_lock.release()
       blink = not blink
     else: 
       # Blink if cannot connect

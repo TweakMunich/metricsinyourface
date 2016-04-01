@@ -70,26 +70,26 @@ class SevenSegDisplay:
     """ Thread callback to scroll large strings. """
     old_data = self.data
     offset = 0
-    dir = 0
+    for i in range(self.num_digits):
+      self.send_raw(self.data[i])
+    print("Entering loop")
     while (True):
       self.lock.acquire()
-      if (old_data != self.data):
+      if (len(old_data) <= self.num_digits):
         old_data = self.data
-        self.start()
-        for i in range(self.num_digits):
-          self.send_raw(self.data[i])
         offset = 0
-        if (len(self.data) <= self.num_digits):
-          dir = 0
-        else:
-          dir = 1
-      else:
-        offset += dir
-        if (offset == len(self.data) - self.num_digits):
-          dir = -dir
         self.start()
         for i in range(self.num_digits):
-          self.send_raw(self.data[i + offset])
+          self.send_raw(old_data[i])
+      else:
+        if (offset == len(old_data) + self.num_digits - 2):
+          old_data = self.data
+          offset = 0
+        self.start()
+        for i in range(self.num_digits):
+          dd = old_data + [0] + old_data
+          self.send_raw(dd[i + offset])
+        offset += 1
       self.lock.release()
       time.sleep(0.4)
 

@@ -137,14 +137,15 @@ def main():
   blink = False
   
   def display_rolling():
-    disp_lock.acquire()
-    print("Updating display data")
-    for i in range(len(disp_data)):
-      disp.set(i, data[i] + ('.' * blink))
-    disp_lock.release()
-    disp.display()
-    time.sleep(0.5)
+    while (True):
+      disp_lock.acquire()
+      for i in range(len(disp_data)):
+        disp.set(i, data[i] + ('.' * blink))
+      disp_lock.release()
+      disp.display()
+      time.sleep(0.5)
 
+  data = []
   disp_data = []
   disp_lock = threading.Lock()
   disp_thread = threading.Thread(target=display_rolling)

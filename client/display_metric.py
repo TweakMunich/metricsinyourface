@@ -138,7 +138,7 @@ def main():
 
   data = []
   disp_data = []
-  disp_offset = 0
+  global disp_offset = 0
   
   def display_rolling():
     global disp_offset

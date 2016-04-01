@@ -156,7 +156,8 @@ def main():
           disp_offset[i] = 0
         dd = disp_data[i]
         dd = dd + "  " + dd
-        d = dd[disp_offset[i]:4]
+        di = disp_offset[i]
+        d = dd[di:di+3]
         print("Data=" + d )
         disp.set(i, d + ('.' * blink))
         disp_offset[i] += 1

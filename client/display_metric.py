@@ -141,14 +141,14 @@ def main():
   disp_offset = 0
   
   def display_rolling():
+    global disp_offset
     while (True):
       disp_lock.acquire()
       for i in range(len(disp_data)):
         d = data[i][:len(data[i]) - disp_offset]
         print("Data=" + d )
         disp.set(i, d + ('.' * blink))
-      #disp_offset += 1
-      disp_offset = disp_offset + 1
+      disp_offset += 1
       disp_lock.release()
       disp.display()
       time.sleep(0.5)

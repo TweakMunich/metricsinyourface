@@ -136,20 +136,23 @@ def main():
   # Blink last decimal point to indicate data is fresh
   blink = False
 
-  data = []
   disp_data = []
-  global disp_offset
-  disp_offset = 0
   
   def display_rolling():
-    # global disp_offset
+    disp_offset = []
+    disp_data_old = []
     while (True):
       disp_lock.acquire()
       for i in range(len(disp_data)):
-        d = data[i][:len(data[i]) - disp_offset]
+        if len(disp_data_old) < i or disp_data_old[i] != disp_data[i]:
+          disp_data_old[i] = disp_data[i]
+          disp_offset[i] = 0
+
+        d = data[i][:len(disp_data[i]) - disp_offset[i]]
         print("Data=" + d )
         disp.set(i, d + ('.' * blink))
-      disp_offset += 1
+        disp_offset[i] += 1
+      
       disp_lock.release()
       disp.display()
       time.sleep(0.5)
@@ -163,7 +166,6 @@ def main():
     if data:
       disp_lock.acquire()
       disp_data = data
-      disp_offset = 0
       disp_lock.release()
       blink = not blink
     else: 

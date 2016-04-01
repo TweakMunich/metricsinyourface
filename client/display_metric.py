@@ -147,7 +147,8 @@ def main():
         d = data[i][:len(data[i]) - disp_offset]
         print("Data=" + d )
         disp.set(i, d + ('.' * blink))
-      disp_offset += 1
+      #disp_offset += 1
+      disp_offset = disp_offset + 1
       disp_lock.release()
       disp.display()
       time.sleep(0.5)

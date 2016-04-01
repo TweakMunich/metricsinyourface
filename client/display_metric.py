@@ -137,8 +137,8 @@ def main():
   blink = False
   
   disp_data = []
-  disp_lock = Lock()
-  disp_thread = Thread(target=display_rolling)
+  disp_lock = threading.Lock()
+  disp_thread = threading.Thread(target=display_rolling)
   disp_thread.start()
   
   def display_rolling():

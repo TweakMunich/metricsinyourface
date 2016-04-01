@@ -12,11 +12,11 @@
 # can be added anytime or IDs can be changed.
 #
 # The code can work with 2 different display types, shift register or i2c.
-# You can combine shift registers for configuraiton with i2c displays.
+# You can combine shift registers for configuration with i2c displays.
 # - import sevenseg_i2c or sevenseg_shift
 # - change the calls to make_displays_xxx accordingly
-# - if not using shift regs for config, import readconfig_fake instead
-# - If using serial displays, comment out the call to load_data in the loop
+# - if not using shift register for config, import readconfig_fake instead
+# - If using shift register displays, comment out the call to load_data in the loop
 
 from sevenseg_i2c import SevenSegDisplay
 #from sevenseg_shift import SevenSegDisplay
@@ -32,6 +32,7 @@ import socket
 import sys
 import time
 import urllib2
+import threading
 
 def get_value(url, hostname):
   """ Fetches a single string value from host. 
@@ -134,13 +135,26 @@ def main():
 
   # Blink last decimal point to indicate data is fresh
   blink = False
+  
+  disp_data = []
+  disp_lock = Lock()
+  disp_thread = Thread(target=display_rolling)
+  disp_thread.start()
+  
+  def display_rolling():
+    disp_lock.acquire()
+    for i in range(len(disp_data)):
+      disp.set(i, data[i] + ('.' * blink))
+    disp_lock.release()
+    disp.display()
+    time.sleep(0.5)
 
   while (True):
     data = get_values(url, hostname, config)
     if data:
-      for i in range(len(data)):
-        disp.set(i, data[i] + ('.' * blink))
-      disp.display()
+      disp_lock.acquire()
+      disp_data = data
+      disp_lock.release()
       blink = not blink
     else: 
       # Blink if cannot connect
@@ -150,7 +164,7 @@ def main():
       disp.display()
 
     # check whether configuration changed (new display, different ID) 
-    # readconfig.load_data() # remove with serial displays, display clock loads
+    readconfig.load_data() # remove with shift register displays, display clock loads
     c = readconfig.read_config()
     if c and not c == config:
       config = c

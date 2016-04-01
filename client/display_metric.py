@@ -144,18 +144,24 @@ def main():
     while (True):
       disp_lock.acquire()
 
+      # Stupid hack to align array sizes
       while len(disp_data_old) < len(disp_data):
         disp_data_old.append("")
         disp_offset.append(0)
 
+      # Scroll the display
       for i in range(len(disp_data)):
         if (disp_data_old[i] != disp_data[i]):
           disp_data_old[i] = disp_data[i]
           disp_offset[i] = 0
-        d = data[i][:len(disp_data[i]) - disp_offset[i]]
+        dd = disp_data[i]
+        dd = dd + "  " + dd
+        d = dd[disp_offset[i]:4]
         print("Data=" + d )
         disp.set(i, d + ('.' * blink))
         disp_offset[i] += 1
+        if len(dd) < 5 or disp_offset[i] > len(dd) - 5:
+          disp_offset[i] = 0
       
       disp_lock.release()
       disp.display()

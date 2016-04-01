@@ -146,6 +146,7 @@ def main():
 
       while len(disp_data_old) < len(disp_data):
         disp_data_old.append("")
+        disp_offset.append(0)
 
       for i in range(len(disp_data)):
         if (disp_data_old[i] != disp_data[i]):

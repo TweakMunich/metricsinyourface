@@ -18,11 +18,11 @@
 # - if not using shift register for config, import readconfig_fake instead
 # - If using shift register displays, comment out the call to load_data in the loop
 
-#from sevenseg_i2c import SevenSegDisplay
-from sevenseg_shift import SevenSegDisplay
+from sevenseg_i2c import SevenSegDisplay
+#from sevenseg_shift import SevenSegDisplay
 
-#import readconfig_fake as readconfig
-import readconfig as readconfig
+import readconfig_fake as readconfig
+#import readconfig as readconfig
 
 from display import Displays
 
@@ -130,24 +130,47 @@ def main():
   config = readconfig.read_config()
   print config
 
-  disp = make_displays_shift(config)
+  disp = make_displays_i2c(config)
   display_config(disp, config)
 
   # Blink last decimal point to indicate data is fresh
   blink = False
-  
+
   disp_data = []
-  disp_lock = Lock()
-  disp_thread = Thread(target=display_rolling)
-  disp_thread.start()
   
   def display_rolling():
-    disp_lock.acquire()
-    for i in range(len(disp_data)):
-      disp.set(i, data[i] + ('.' * blink))
-    disp_lock.release()
-    disp.display()
-    time.sleep(0.5)
+    disp_offset = []
+    disp_data_old = []
+    while (True):
+      disp_lock.acquire()
+
+      # Stupid hack to align array sizes
+      while len(disp_data_old) < len(disp_data):
+        disp_data_old.append("")
+        disp_offset.append(0)
+
+      # Scroll the display
+      for i in range(len(disp_data)):
+        if (disp_data_old[i] != disp_data[i]):
+          disp_data_old[i] = disp_data[i]
+          disp_offset[i] = 0
+        dd = disp_data[i]
+        dd = dd + " " * 4
+        di = disp_offset[i]
+        d = dd[di:di+4]
+        print("Data=" + d )
+        disp.set(i, d + ('.' * blink))
+        disp_offset[i] += 1
+        if len(dd) < 5 or disp_offset[i] > len(dd) - 4:
+          disp_offset[i] = 0
+      
+      disp_lock.release()
+      disp.display()
+      time.sleep(0.5)
+
+  disp_lock = threading.Lock()
+  disp_thread = threading.Thread(target=display_rolling)
+  disp_thread.start()
 
   while (True):
     data = get_values(url, hostname, config)
@@ -168,7 +191,7 @@ def main():
     c = readconfig.read_config()
     if c and not c == config:
       config = c
-      disp = make_displays_shift(c)
+      disp = make_displays_i2c(c)
       print "new config: %i digits, ID = %i" % (config[0][0], config[0][1])
     else:
       time.sleep(2)

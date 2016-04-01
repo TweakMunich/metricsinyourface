@@ -18,6 +18,7 @@ import sevenseg
 
 import sys
 import time
+import threading
 
 from Adafruit_7Segment import SevenSegment
 
@@ -27,6 +28,9 @@ class SevenSegDisplay:
     self.num_digits = num_digits
     self.digit = 0
     self.seg = SevenSegment(address)
+    self.lock = Lock()
+    self.scroller = Thread(target=scroll)
+    self.disp_data = [0, 0, 0, 0]
 
   def setup(self):
     return None
@@ -50,16 +54,42 @@ class SevenSegDisplay:
   def output(self, value):
     """ Outputs a string or a integer number onto 7-segment display."""
     raw = sevenseg.text(value, self.num_digits)
-    self.start()
-    for c in raw:
-      self.send_raw(c)
+    self.lock.acquire()
+    self.data = raw
+    self.lock.release()
 
   def blank(self):
     """ Blanks the display (all LED off). """
-    raw = sevenseg.blanks(self.num_digits)
-    self.start()
-    for c in raw:
-      self.send_raw(c)
+    self.lock.acquire()
+    self.data = [0, 0, 0, 0]
+    self.lock.release()
+
+  def scroll(self):
+    """ Thread callback to scroll large strings. """
+    old_data = self.data
+    offset = 0
+    dir = 0
+    while (True):
+      self.lock.acquire()
+      if (old_data != self.data):
+        old_data = self.data
+        self.start()
+        for i in range(self.num_digits):
+          self.send_raw(self.data[i])
+        offset = 0
+        if (len(self.data) <= self.num_digits):
+          dir = 0
+        else:
+          dir = 1
+      else:
+        offset += dir
+        if (offset == len(self.data) - self.num_digits):
+          dir = -dir
+        self.start()
+        for i in range(self.num_digits):
+          self.send_raw(self.data[i + offset])
+      self.lock.release()
+      time.sleep(0.4)
 
 def main():
   """ Simple test: drive one or more displays """

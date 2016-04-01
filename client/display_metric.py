@@ -138,10 +138,11 @@ def main():
 
   data = []
   disp_data = []
-  global disp_offset = 0
+  global disp_offset
+  disp_offset = 0
   
   def display_rolling():
-    global disp_offset
+    # global disp_offset
     while (True):
       disp_lock.acquire()
       for i in range(len(disp_data)):

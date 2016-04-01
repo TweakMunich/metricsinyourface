@@ -28,9 +28,11 @@ class SevenSegDisplay:
     self.num_digits = num_digits
     self.digit = 0
     self.seg = SevenSegment(address)
-    self.lock = Lock()
-    self.scroller = Thread(target=scroll)
+    self.lock = threading.Lock()
+    self.scroller = threading.Thread(target=self.scroll)
+    self.scroller.setDaemon(True)
     self.disp_data = [0, 0, 0, 0]
+    self.scroller.start()
 
   def setup(self):
     return None

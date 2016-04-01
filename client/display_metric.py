@@ -140,7 +140,9 @@ def main():
     while (True):
       disp_lock.acquire()
       for i in range(len(disp_data)):
-        disp.set(i, data[i][:-disp_offset] + ('.' * blink))
+        d = data[i][:len(data[i])-1-disp_offset]
+        print("Data=" + d )
+        disp.set(i, d + ('.' * blink))
       #disp_offset += 1
       disp_lock.release()
       disp.display()

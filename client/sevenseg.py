@@ -41,7 +41,8 @@ def text(value, digits):
       integer number.
 
       If the string is shorter than the specified digits, it is padded on 
-      the left. If it is longer, only the rightmost characters are included.
+      the left. The string may be longer than the specified number of digits,
+      scrolling must be handled elsewhere.
 
       Nonprintable characters are omitted.
 
@@ -61,7 +62,6 @@ def text(value, digits):
       c1 = c
   if c1:
     result += charList(c1)
-  result = result[-digits:]
   while len(result) < digits:
     result = [blank()] + result
   return result

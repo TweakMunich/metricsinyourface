@@ -96,7 +96,7 @@ class SevenSegDisplay:
         offset += 1
       time1 = time.time()
       dt = time1 - time0
-      time0 = time1
+      time0 += 0.4
       if (dt < 0):
         dt = 0
       time.sleep(0.4 - dt)

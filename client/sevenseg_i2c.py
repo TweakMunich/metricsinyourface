@@ -73,8 +73,8 @@ class SevenSegDisplay:
     for i in range(self.num_digits):
       self.send_raw(self.data[i])
     print("Entering loop")
+    time0 = time.time()
     while (True):
-      time0 = time.time()
       if (len(old_data) <= self.num_digits):
         self.lock.acquire()
         old_data = self.data
@@ -94,11 +94,12 @@ class SevenSegDisplay:
           dd = old_data + [0] + old_data
           self.send_raw(dd[i + offset])
         offset += 1
-      dt = time.time() - time0
+      time1 = time.time()
+      dt = time1 - time0
+      time0 = time1
       if (dt < 0):
-        time.sleep(0.4)
-      else:
-        time.sleep(0.4 - dt)
+        dt = 0
+      time.sleep(0.4 - dt)
 
 def main():
   """ Simple test: drive one or more displays """

@@ -99,6 +99,8 @@ class SevenSegDisplay:
       time0 += 0.4
       if (dt < 0):
         dt = 0
+      elif (dt > 0.4):
+        dt = 0.4
       time.sleep(0.4 - dt)
 
 def main():

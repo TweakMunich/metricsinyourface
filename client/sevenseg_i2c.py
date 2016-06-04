@@ -8,28 +8,26 @@
 #
 # i2c must be enabled on the raspberry pi. If you don't see /dev/i2c-1 this
 # code can't work. 
-# Link from your current directory to the following driver files cloned from
-# https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code:
-#   Adafruit_I2C.py
-#   Adafruit_7Segment.py
-#   Adafruit_LEDBackpack.py
+#
+# Requires Adafruit seven segment library:
+# sudo pip install adafruit-led-backpack
 
 import sevenseg
 
 import sys
 import time
 
-from Adafruit_7Segment import SevenSegment
+from Adafruit_LED_Backpack import SevenSegment
 
 class SevenSegDisplay:
 
   def __init__(self, num_digits=4, address=0x70):
     self.num_digits = num_digits
     self.digit = 0
-    self.seg = SevenSegment(address)
+    self.seg = SevenSegment.SevenSegment(address=address)
 
   def setup(self):
-    return None
+    self.seg.begin()
 
   def cleanup(self):
     return None
@@ -38,14 +36,11 @@ class SevenSegDisplay:
     self.digit = 0
 
   def latch(self):
-    return None
+    self.seg.write_display()
 
   def send_raw(self, segments):
-    self.seg.writeDigitRaw(self.digit, segments)
+    self.seg.set_digit_raw(self.digit, segments)
     self.digit += 1
-    # digits 2 is the colon, skip 
-    if self.digit == 2:
-      self.digit += 1
 
   def output(self, value):
     """ Outputs a string or a integer number onto 7-segment display."""
@@ -76,7 +71,7 @@ def main():
       time.sleep(0.1)
     display.cleanup()
   else:
-    # show values across multipel displays
+    # show values across multiple displays
     address = 0x70
     displays = []
     for value in args[1:]:

@@ -4,7 +4,7 @@
 # can be chained analog to the displays with 16 bits per display.
 #
 # For each display, a 16 bit shift register must report the config:
-# bit 0-11  = display ID (0-2048), inverted (e.g. all bits high is ID 0)
+# bit 0-11  = display ID (0-4095), inverted (e.g. all bits high is ID 0)
 # bit 12    = unused (use to switch common anode / cathode?)
 # bit 13-15 = number digits - 1 (e.g. 0b011 = 4 digits)
 #

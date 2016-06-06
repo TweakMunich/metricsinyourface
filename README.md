@@ -1,15 +1,16 @@
 # metricsinyourface
 
-A simple IoT project that pulls data from the cloud and displays it on a seven-segment display. Seven-segment displays are a bit retro but very easy to read and more attention-getting than a tablet or small screen. Also, you can connect very large displays up to 10cm.
+A simple IoT project that pulls data from the cloud (the "server") and displays it on a seven-segment display (the "client"). Seven-segment displays are a bit retro but very easy to read and more attention-getting than a tablet or small screen. Also, you can connect very large displays up to 10cm.
 
-One or more displays, each with a configurable ID or "Channel", are connected to a Raspberry Pi, which fetches data from teh cloud and updates the display. Integer or floating point numbers plus a few special characters can be displayed.
+One or more displays, each with a configurable ID or "Channel", are connected to a Raspberry Pi, which updates the display(s) every few seconds with data fetched from the cloud. Integer or floating point numbers plus a few special characters can be displayed.
 
 ## Hardware
-To preserve the number of GPIO ports used, input and output occurs via shift registers ('595 for output, '166 for input) or I2C bus. 
+To preserve the number of GPIO ports used, input and output occurs either via shift registers ('595 for output, '166 for input) or I2C bus (Adafruit LED backpacks based on HT16K33 for output, MCP23017 for input) . 
 
 * Serial input: Each display's configurable ID and number of digits can be read from chained shift registers, 16 bits per display. Bits 0-11 are the display ID (aka "channel"), Bits 13-15 specify the number of digits (000 = 1, 110 = 7, 111 not allowed), Bit 12 is not used. 
+* I2C input: The same bit assigment, but read from a 16 bit I2C port expander, which saves a lot of wiring. Multiple expanders can be connected (one for each display), addresses in ascending order of tehir I2C address (0x20 - 0x27).
 * Serial Display: Large displays can be driven via chained shift registers, 8 bits per digit. The Pi shifts the correct number of digits for each display so that they can be chained together without addressing.
-* I2C Display: To simplify soldering you can connect 4-digit I2C displays from Adafruit. 
+* I2C Display: To simplify soldering you can connect 4-digit I2C displays from Adafruit. The displays are addressed in ascending order of their I2C address (0x80 - 0x87).
 
 ## Client Code
 

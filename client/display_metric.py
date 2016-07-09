@@ -104,9 +104,9 @@ def make_displays_i2c(config, address=0x70):
        have i2c addresses in ascending order. """
   displays = []
   for d in config:
-     d = SevenSegDisplay(address = address)
-     d.setup()
-     displays += [d]
+    d = SevenSegDisplay(address = address)
+    d.setup()
+    displays += [d]
     address += 1
   return Displays(displays)
 

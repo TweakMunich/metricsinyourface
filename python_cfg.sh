@@ -7,6 +7,6 @@ if [ $(id -u) -ne 0 ]; then
   exit
 fi
  
-sudo apt-get -y install python-pip python-smbus
-sudo pip -y install adafruit-led-backpack
+sudo apt-get -y install python-pip python-smbus python-dev
+sudo pip install adafruit-led-backpack
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Enable i2c, set hostname and upgrades packages
-# extracted from https://github.com/asb/raspi-config
+# Relies on raspi-config noninteractive mode. tested with Jessie 2016-05-27
 
 CONFIG=/boot/config.txt
 
@@ -16,10 +16,8 @@ if [ $(id -u) -ne 0 ]; then
 fi
 
 echo "enabling I2C interface"
-sed $CONFIG -i -r -e "s/^((device_tree_param|dtparam)=([^,]*,)*i2c(_arm)?)(=[^,]*)?/\1=on/"
-if ! grep -q -E "^(device_tree_param|dtparam)=([^,]*,)*i2c(_arm)?=[^,]*" $CONFIG; then
-  printf "dtparam=i2c_arm=on\n" >> $CONFIG
-fi
+# 0 enables the interface as it's the "yes" response from whiptail
+sudo raspi-config nonint do_i2c 0
 
 echo "Setting hostname to " $1
 CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`

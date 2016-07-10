@@ -1,16 +1,30 @@
 # metricsinyourface
 
-A simple IoT project that pulls data from the cloud (the "server") and displays it on a seven-segment display (the "client"). Seven-segment displays are a bit retro but very easy to read and more attention-getting than a tablet or small screen. Also, you can connect very large displays up to 10cm.
+A simple IoT project that pulls data from the cloud (the "server") and displays it on one or more seven-segment displays (the "client"). Seven-segment displays are a bit retro but very easy to read from a distance and more attention-getting than a tablet or small screen. Also, you can connect very large displays up to 10cm.
 
-One or more displays, each with a configurable ID or "Channel", are connected to a Raspberry Pi, which updates the display(s) every few seconds with data fetched from the cloud. Integer or floating point numbers plus a few special characters can be displayed.
+##Component Overview
 
+![Component Overview](docs/metrics_arhitecture_small.png)
+
+The system is based on a cloud-based data buffer that is inspired by a [Tuple Space](https://en.wikipedia.org/wiki/Tuple_space) architetrue. The following components interact to make it work:
+
+* _Data Sources_ expose metrics. This can be the number of FaceBook likes on your page, the number of commits in your GitHub project or yoru room temperature.
+* _Adapters_: extract metrics, format / adapt them as needed and POST them to the server.
+* The _Server_ acts as central data hub. Data is addressed via channels.
+* _Clients_ (Raspberry Pi) periodically fetch data from the _Server_ and display it on seven-segment _Displays_. Multiple displays can be connected to one client.
+* _Channel Selectors_ define which data channels a _Client_ should display.
+ 
 ## Hardware
-To preserve the number of GPIO ports used, input and output occurs either via shift registers ('595 for output, '166 for input) or I2C bus (Adafruit LED backpacks based on HT16K33 for output, MCP23017 for input) . 
+To preserve the number of GPIO ports used, input and output occurs serially. Two options are implemented, each of which corresponds to a dedicated source file, `readconfig_` for reading channel selectors and `sevenseg_` for data displays:
+* Shift registers using '595 for output, '166 for input. Shift registers allow driving large LED displays that require more than 5 volts, but require more wiring.
+* I2C bus using Adafruit LED backpacks based on HT16K33 for output, MCP23017 for input.
 
-* Serial input: Each display's configurable ID and number of digits can be read from chained shift registers, 16 bits per display. Bits 0-11 are the display ID (aka "channel"), Bits 13-15 specify the number of digits (000 = 1, 110 = 7, 111 not allowed), Bit 12 is not used. 
-* I2C input: The same bit assigment, but read from a 16 bit I2C port expander, which saves a lot of wiring. Multiple expanders can be connected (one for each display), addresses in ascending order of tehir I2C address (0x20 - 0x27).
-* Serial Display: Large displays can be driven via chained shift registers, 8 bits per digit. The Pi shifts the correct number of digits for each display so that they can be chained together without addressing.
-* I2C Display: To simplify soldering you can connect 4-digit I2C displays from Adafruit. The displays are addressed in ascending order of their I2C address (0x70 - 0x77).
+The _Channel Selectors_ input can also be hardcoded (`client/readconfig_fake.py`). The detailed protocols and assumptions are as follows:
+
+* Serial input: Each display's configurable ID and number of digits is read from chained shift registers, 16 bits per display. Bits 0-11 are the display ID (aka "channel"), Bits 13-15 specify the number of digits (000 = 1, 110 = 7, 111 not allowed), Bit 12 is not used (`client/readconfig.py`). 
+* I2C input: The same bit assigment, but read from a 16 bit I2C port expander, which saves a lot of wiring. Multiple expanders can be connected (one for each display), addresses in ascending order of their I2C address (0x20 - 0x27). (`client/readconfig_i2c.py`)
+* Serial Display: Large displays can be driven via chained shift registers, 8 bits per digit. The Pi shifts the correct number of digits for each display so that they can be chained together without addressing. (`client/sevenseg_shift.py`)
+* I2C Display: To simplify soldering you can connect 4-digit I2C displays from Adafruit. The displays are addressed in ascending order of their I2C address (0x70 - 0x77). (`client/sevenseg_i2c.py`)
 
 ## Client Code
 
@@ -20,12 +34,11 @@ The `client` folder contains the code running in the Pi. To execute:
 
 The Pi retrieves values to be displayed from the server based on the display ID and the `domain` string. For example if `valueprefix` is `foo` and a display with the ID 3 is connected to the Pi, it will look for the value of the parameter `foo3`.
 
-
 ## Server-side code
 
 The `server` folder contains the code running on a public cloud. It starts a simple Web server available via HTTP.
 
-To make it run on your machine, execute : `npm install`, then `node app.js`. A deployment script has been provided to more easily deploy on a Linux box. See the sub directory : deployment scripts. It has been tested on an EC2 instance AWS Linux AMI.
+Execute : `npm install`, then `node app.js`. A deployment script more easily deploys on a Linux box. See the sub directory : deployment scripts. It has been tested on an EC2 instance AWS Linux AMI.
 
 The server can easily run on AWS Beanstalk: create a zip from the file contained in the server folder after having done an 'npm install' and follow the instruction on AWS Beanstalk wizard.
 

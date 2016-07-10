@@ -23,12 +23,12 @@ To minimize the number of GPIO ports used and to allow multiple displays on a si
 * Shift registers using '595 for output, '166 for input. Shift registers allow driving large LED displays that require more than 5 volts, but require more wiring.
 * I2C bus using Adafruit LED backpacks based on HT16K33 for output, MCP23017 for input.
 
-The _Channel Selectors_ input can also be hardcoded (`client/readconfig_fake.py`). The detailed protocols and assumptions are as follows:
+The _Channel Selectors_ input can also be hardcoded [readconfig_fake.py](client/readconfig_fake.py). The detailed protocols and assumptions are as follows:
 
-* Serial input: Each display's configurable ID and number of digits is read from chained shift registers, 16 bits per display. Bits 0-11 are the display ID (aka "channel"), Bits 13-15 specify the number of digits (000 = 1, 110 = 7, 111 not allowed), Bit 12 is not used (`client/readconfig.py`, `hardware/readcfg.PNG`). 
-* I2C input: The same bit assigment, but read from a 16 bit I2C port expander, which saves a lot of wiring. Multiple expanders can be connected (one for each display), addresses in ascending order of their I2C address (0x20 - 0x27). (`client/readconfig_i2c.py`)
-* Serial Display: Large displays can be driven via chained shift registers, 8 bits per digit. The Pi shifts the correct number of digits for each display so that they can be chained together without addressing. (`client/sevenseg_shift.py`, `hardware/7SEG_RAW.PNG`)
-* I2C Display: To simplify soldering you can connect 4-digit I2C displays from Adafruit. The displays are addressed in ascending order of their I2C address (0x70 - 0x77). (`client/sevenseg_i2c.py`)
+* Serial input: Each display's configurable ID and number of digits is read from chained shift registers, 16 bits per display. Bits 0-11 are the display ID (aka "channel"), Bits 13-15 specify the number of digits (000 = 1, 110 = 7, 111 not allowed), Bit 12 is not used. Source: [readconfig.py](client/readconfig.py), Schematic: [readcfg.PNG](hardware/readcfg.PNG). 
+* I2C input: The same bit assigment, but read from a 16 bit I2C port expander, which saves a lot of wiring. Multiple expanders can be connected (one for each display), addresses in ascending order of their I2C address (0x20 - 0x27). Source: [readconfig_i2c.py](client/readconfig_i2c.py)
+* Serial Display: Large displays can be driven via chained shift registers, 8 bits per digit. The Pi shifts the correct number of digits for each display so that they can be chained together without addressing. Source: [sevenseg_shift.py](client/sevenseg_shift.py), Schematic; [7SEG_RAW.PNG](hardware/7SEG_RAW.PNG)
+* I2C Display: To simplify soldering you can connect 4-digit I2C displays from Adafruit. The displays are addressed in ascending order of their I2C address (0x70 - 0x77). Source: [sevenseg_i2c.py](client/sevenseg_i2c.py)
 
 ## Client Code
 

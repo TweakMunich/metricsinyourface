@@ -40,7 +40,7 @@ def get_value(url, hostname):
   try:
     req = urllib2.Request(url) 
     req.add_header("REMOTE_HOST", hostname)
-    response = urllib2.urlopen(req)
+    response = urllib2.urlopen(req, timeout=5)
     data = json.loads(response.read().decode('utf-8'))
     if "value" in data:
       return data["value"]

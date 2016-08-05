@@ -44,7 +44,9 @@ def get_value(url, hostname):
     data = json.loads(response.read().decode('utf-8'))
     if "value" in data:
       return data["value"]
-  except(ValueError):
+  except (urllib2.HTTPError, urllib2.URLError) as e:
+    raise
+  except ValueError:
     return None
 
 def get_values(url, hostname, config):
@@ -66,6 +68,7 @@ def get_values(url, hostname, config):
       data += ["_" * digits]
     except urllib2.URLError as e:
       # if there is a connection problem, don't try again
+      print "Connection error " + str(e.reason)
       return None
   return data
 

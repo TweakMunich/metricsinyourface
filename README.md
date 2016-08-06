@@ -2,9 +2,9 @@
 
 A simple IoT project that pulls data from the cloud (the "server") and displays it on one or more seven-segment displays (the "client"). Seven-segment displays are a bit retro but very easy to read from a distance and more attention-getting than a tablet or small screen. Also, you can connect very large displays up to 10cm.
 
-##Component Overview
+## Component Overview
 
-![Component Overview](docs/metrics_arhitecture_small.png)
+![Component Overview](docs/metrics_architecture_small.png)
 
 The system is based on a cloud-based data buffer that is inspired by a [Tuple Space](https://en.wikipedia.org/wiki/Tuple_space) architetrue. The following components interact to make it work:
 

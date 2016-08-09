@@ -46,6 +46,10 @@ def get_value(url, hostname):
       return data["value"]
   except (urllib2.HTTPError, urllib2.URLError) as e:
     raise
+  except socket.timeout:
+    # undocumented exception thrown by urlopen
+    print "socket.timeout"
+    return None
   except ValueError:
     return None
 
@@ -68,7 +72,7 @@ def get_values(url, hostname, config):
       data += ["_" * digits]
     except urllib2.URLError as e:
       # if there is a connection problem, don't try again
-      print "Connection error " + str(e.reason)
+      print "Connection error: " + str(e.reason)
       return None
   return data
 

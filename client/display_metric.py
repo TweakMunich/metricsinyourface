@@ -18,11 +18,11 @@
 # - if not using shift register for config, import readconfig_fake instead
 # - If using shift register displays, comment out the call to load_data in the loop
 
-from sevenseg_i2c import SevenSegDisplay
-#from sevenseg_shift import SevenSegDisplay
+#from sevenseg_i2c import SevenSegDisplay
+from sevenseg_shift import SevenSegDisplay
 
-import readconfig_fake as readconfig
-#import readconfig as readconfig
+#import readconfig_fake as readconfig
+import readconfig as readconfig
 
 from display import Displays
 
@@ -40,7 +40,7 @@ def get_value(url, hostname):
   try:
     req = urllib2.Request(url) 
     req.add_header("REMOTE_HOST", hostname)
-    response = urllib2.urlopen(req)
+    response = urllib2.urlopen(req, timeout=5)
     data = json.loads(response.read().decode('utf-8'))
     if "value" in data:
       return data["value"]
@@ -134,7 +134,7 @@ def main():
   config = readconfig.read_config()
   print config
 
-  disp = make_displays_i2c(config)
+  disp = make_displays_shift(config)
   display_config(disp, config)
 
   # Blink last decimal point to indicate data is fresh
@@ -155,11 +155,11 @@ def main():
       disp.display()
 
     # check whether configuration changed (new display, different ID) 
-    readconfig.load_data() # remove with shift register displays, display clock loads
+    # readconfig.load_data() # remove with shift register displays, display clock loads
     c = readconfig.read_config()
     if c and not c == config:
       config = c
-      disp = make_displays_i2c(c)
+      disp = make_displays_shift(c)
       print "new config: %i digits, ID = %i" % (config[0][0], config[0][1])
     else:
       time.sleep(2)

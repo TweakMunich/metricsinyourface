@@ -96,25 +96,14 @@ def display_config(disp, config):
   time.sleep(2)
   return config
 
-def make_displays_shift(config):
-  """ Generates one shift reg display for each listed in config """
-
+def make_displays(config):
+  """ Generates one display for each listed in config. 
+      i2c displays must have i2c addresses in ascending order. """
   displays = []
   for d in config:
-    displays += [SevenSegDisplay(d[0])]
-  if len(displays) > 0:
-    displays[0].setup()
-  return Displays(displays)
-
-def make_displays_i2c(config, address=0x70):
-  """ Generates one i2c display for each listed in config. Displays must
-       have i2c addresses in ascending order. """
-  displays = []
-  for d in config:
-    d = SevenSegDisplay(address = address)
-    d.setup()
-    displays += [d]
-    address += 1
+    disp = SevenSegDisplay(d[0])
+    disp.setup()
+    displays += [disp]
   return Displays(displays)
 
 def main():
@@ -138,7 +127,7 @@ def main():
   config = readconfig.read_config()
   print config
 
-  disp = make_displays_shift(config)
+  disp = make_displays(config)
   display_config(disp, config)
 
   # Blink last decimal point to indicate data is fresh
@@ -163,7 +152,7 @@ def main():
     c = readconfig.read_config()
     if c and not c == config:
       config = c
-      disp = make_displays_shift(c)
+      disp = make_displays(c)
       print "new config: %i digits, ID = %i" % (config[0][0], config[0][1])
     else:
       time.sleep(2)

@@ -21,13 +21,28 @@ from Adafruit_LED_Backpack import SevenSegment
 
 class SevenSegDisplay:
 
-  def __init__(self, num_digits=4, address=0x70):
+  next_addr = 0x70  # next available i2c display address
+
+  def __init__(self, num_digits=4, address=None):
+    """ Sets up one physical display per 4 digits. 
+        If no address is specified, auto-increments address from 0x70."""
     self.num_digits = num_digits
-    self.digit = 0
-    self.seg = SevenSegment.SevenSegment(address=address)
+    if not address:
+      address = SevenSegDisplay.next_addr
+    self.seg = []
+    for i in range(num_digits / 4):
+      self.seg += [SevenSegment.SevenSegment(address = address)]
+      address += 1
+    SevenSegDisplay.next_addr = address
+    self.start()
+
+  def addrs():
+    """ Returns the number of i2c addresses used by the display."""
+    return self.num_digits / 4
 
   def setup(self):
-    self.seg.begin()
+    for seg in self.seg:
+      seg.begin()
 
   def cleanup(self):
     return None
@@ -36,10 +51,11 @@ class SevenSegDisplay:
     self.digit = 0
 
   def latch(self):
-    self.seg.write_display()
+    for seg in self.seg:
+      seg.write_display()
 
   def send_raw(self, segments):
-    self.seg.set_digit_raw(self.digit, segments)
+    self.seg[(self.num_digits - self.digit - 1) / 4].set_digit_raw(self.digit % 4, segments)
     self.digit += 1
 
   def output(self, value):
@@ -62,7 +78,7 @@ def main():
 
   if len(args) < 2:
     # count on the first display
-    display = SevenSegDisplay()
+    display = SevenSegDisplay(address = 0x70)
     display.setup()
     for num in range(0,200):
       display.start()
@@ -70,19 +86,28 @@ def main():
       display.latch()
       time.sleep(0.1)
     display.cleanup()
+  elif len(args[1]) > 4:
+    # show large value across multipel displays
+    display = SevenSegDisplay(num_digits = 8)
+    display.setup()
+    display.start()
+    display.output(args[1])
+    display.latch()
   else:
     # show values across multiple displays
     address = 0x70
     displays = []
     for value in args[1:]:
-      displays += [SevenSegDisplay(address = address)]
+      display = SevenSegDisplay()
+      display.setup()
+      displays += [display]
       address += 1
     count = 1
-    displays[0].start()
     for d in displays: 
+      d.start()
       d.output(args[count])
       count += 1
-    displays[0].latch()
+      d.latch()
 
 
 if __name__ == "__main__":

@@ -152,7 +152,7 @@ def main():
     c = readconfig.read_config()
     if c and not c == config:
       config = c
-      disp = make_displays_i2c(c)
+      disp = make_displays(c)
       print "new config: %i digits, ID = %i" % (config[0][0], config[0][1])
     else:
       time.sleep(2)

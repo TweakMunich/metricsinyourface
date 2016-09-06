@@ -6,7 +6,7 @@ A simple IoT project that pulls data from the cloud (the "server") and displays 
 
 ![Component Overview](docs/metrics_architecture_small.png)
 
-The system is based on a cloud-based data buffer that is inspired by a [Tuple Space](https://en.wikipedia.org/wiki/Tuple_space) architetrue. The following components interact to make it work:
+The system is based on a cloud-based data buffer that is inspired by a [Tuple Space](https://en.wikipedia.org/wiki/Tuple_space) architecture. The following components interact to make it work:
 
 * _Data Sources_ expose metrics. This can be the number of FaceBook likes on your page, the number of commits in your GitHub project or yoru room temperature.
 * _Adapters_: extract metrics, format / adapt them as needed and POST them to the server.
@@ -16,7 +16,7 @@ The system is based on a cloud-based data buffer that is inspired by a [Tuple Sp
  
 ## Operations
 
-The Raspberry Pi requires Internet access, either via a Wifi adapter or Ethernet. When the Pi is able to read the data, the dot at the end of the display will blink slowly. If the Pi is unable to fetch data, the whole display will blank on and off. If the diplay neither blanks nro has a blinking dot, the Pi is likely hung.
+The Raspberry Pi requires Internet access, either via a Wifi adapter or Ethernet. When the Pi is able to read the data, the dot at the end of the display will blink slowly. If the Pi is unable to fetch data, the whole display will blank on and off. If the diplay neither blanks nor has a blinking dot, the Pi is likely hung.
  
 ## Hardware
 To minimize the number of GPIO ports used and to allow multiple displays on a single client, input and output occurs serially. Two options are implemented, each of which corresponds to a dedicated source file, `readconfig_` for reading channel selectors and `sevenseg_` for data displays:

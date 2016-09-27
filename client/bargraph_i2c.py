@@ -1,8 +1,9 @@
 #! /usr/bin/python
 #
-# sudo python bargraph_i2c.py <number> -- display number
+# sudo python bargraph_i2c.py  -- bar graph test
+# sudo python bargraph_i2c.py <number> -- display number between 0 and 100 on bar graph
 #
-# Outputs decimal numbers to AdaFruit LED Backback 7 Segment display
+# Outputs decimal numbers to AdaFruit LED Backback bicolor bar graph display
 #
 # i2c must be enabled on the raspberry pi. If you don't see /dev/i2c-1 this
 # code can't work. 
@@ -31,7 +32,7 @@ class BarGraph:
     return None
  
   def calcbar(self, value):
-    """ Converts from 0 to 100 range into bar index, i.e. 0 / 23 """
+    """ Converts from 0 to 100 range into bar index, i.e. 0 - 23 """
     return (value + 4) * 24 / 100
 
   def output(self, value):
@@ -54,7 +55,7 @@ class BarGraph:
     self.bar.write_display()
 
 def main():
-  """ Simple test: drive one or more displays """
+  """ Simple test: drive one display """
   args=sys.argv
 
   if len(args) < 2:

@@ -1,4 +1,4 @@
-// A very simple key-value store. Keys and values can be any string.
+// A very simple key-value store. Keys and values can be any string except "0".
 //
 // Override default port 3000 with PORT=1234 environment variable or 
 // command line argument

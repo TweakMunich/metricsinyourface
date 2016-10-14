@@ -33,6 +33,13 @@ import sys
 import time
 import urllib2
 
+def set_proxy(proxy):
+  """ Sets a HTTP proxy for GET requests if specified."""
+  if proxy:
+    handler = urllib2.ProxyHandler({'http': proxy})
+    opener = urllib2.build_opener(handler)
+    urllib2.install_opener(opener)
+
 def get_value(url, hostname):
   """ Fetches a single string value from host. 
        Returns None if value is undefined.
@@ -120,8 +127,9 @@ def main():
 #        args[2])
 
   hostname = socket.gethostname()
+  
+  set_proxy('')
 
-  # Note: if config circuit is not present, import readconfig_fake instead
   readconfig.setup()
   readconfig.load_data()
   config = readconfig.read_config()
@@ -136,12 +144,13 @@ def main():
   while (True):
     data = get_values(url, hostname, config)
     if data:
+      # Show data on displays
       for i in range(len(data)):
         disp.set(i, data[i] + ('.' * blink))
       disp.display()
       blink = not blink
     else: 
-      # Blink if cannot connect
+      # Blink if unable to connect
       print("could not reach server")
       disp.blank()
       time.sleep(.2)

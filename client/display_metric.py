@@ -145,7 +145,7 @@ def main():
       disp.display()
 
     # check whether configuration changed (new display, different ID) 
-    if !disp.loads_config_data():
+    if not disp.loads_config_data():
       readconfig.load_data()
     c = readconfig.read_config()
     if c and not c == config:

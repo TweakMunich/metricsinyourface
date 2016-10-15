@@ -24,27 +24,44 @@ class BarGraphDisplay:
     self.bar = BicolorBargraph24.BicolorBargraph24(address = address)
     self.yellow = yellow
     self.red = red
+    self.address = address
+
+  def addrs(self):
+    """ Returns the number of i2c addresses used by the display."""
+    return 1
 
   def setup(self):
-    self.bar.begin()
+    try:
+      self.bar.begin()
+    except IOError:
+      print("cannot connect to i2c device %s" % hex(self.address))
 
   def cleanup(self):
     return None
  
   def start(self):
-    self.bar.clear()
+    """ Prepares the display for setting data."""
+    try:
+      self.bar.clear()
+    except IOError:
+      pass
  
   def latch(self):
-    self.bar.write_display()
+    """ Shows the set value on the display."""
+    try:
+      self.bar.write_display()
+    except IOError:
+      pass
  
   def calcbar(self, value):
     """ Converts from 0 to 100 range into bar index, i.e. 0 - 23 """
     return (value + 4) * 24 / 100
 
   def output(self, value):
-    """ Outputs an integer between 0 and 99 to bar graph display."""
+    """ Outputs an integer between 0 and 99 to bar graph display.
+        Value is shown after call to latch(). """
     try:
-      value = int(float(value.strip('.')))
+      value = int(float(str(value).strip('.')))
     except ValueError:
       value = 0
 
@@ -62,20 +79,19 @@ class BarGraphDisplay:
       else:
         color = BicolorBargraph24.GREEN
       self.bar.set_bar(num, color)
-    self.latch()
 
   def blank(self):
+    """ Blanks display. Requires call to latch(). """
     self.bar.clear()
     for num in range (0,24):
       self.bar.set_bar(num, BicolorBargraph24.OFF)
-    self.bar.write_display()
 
 def main():
   """ Simple test: drive one display """
   args=sys.argv
 
   if len(args) < 2:
-    # count on the first display
+    # count on the display
     display = BarGraphDisplay(50, 75, address = 0x71)
     display.setup()
     for num in range(0,101):
@@ -85,6 +101,7 @@ def main():
       time.sleep(0.05)
     display.cleanup()
   else:
+    # displayu the number from command line
     value = int(args[1])
     display = BarGraphDisplay(address = 0x71)
     display.setup()

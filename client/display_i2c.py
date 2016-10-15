@@ -59,6 +59,8 @@ class Displays:
       self.displays[index].latch()
 
   def loads_config_data(self):
+    """ Indicates whether displaying data already loads config data.
+        True only for serial display and config input. """
     return False
 
 

@@ -16,12 +16,12 @@
 # - import appropriate read_config (readconfig_fake for hardcoded config)
 # - import Displays from display_i2c or display_shift 
 
-#import readconfig_fake as readconfig
-import readconfig_shift as readconfig
+import readconfig_fake as readconfig
+#import readconfig_shift as readconfig
 #import readconfig_i2c as readconfig
 
-#from display_i2c import Displays
-from display_shift import Displays
+from display_i2c import Displays
+#from display_shift import Displays
 
 import json
 import os

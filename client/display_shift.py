@@ -1,8 +1,9 @@
 #! /usr/bin/python
 
-# Manages a set of displays, accommodating scenarios like multiple
-# displays connected on a single shift register chain. Hardware control
-# (i2c, shift regs) is handled inside the passed-in display objects.
+# Manages a set of shift register displays,offering global operations and
+# simultaneous update.
+
+from sevenseg_shift import SevenSegDisplay
 
 class Displays:
 
@@ -10,6 +11,18 @@ class Displays:
     """ Pass an array of display objects. """
     self.displays = displays
     self.data = [""] * len(displays)
+
+
+  @staticmethod
+  def make_displays(config):
+    """ Generates one display for each config.
+        Displays must must be chained on shift registers. """
+    displays = []
+    for d in config:
+      disp = SevenSegDisplay(d[0])
+      disp.setup()
+      displays += [disp]
+    return Displays(displays)
 
   def set(self, index, data):
     """ Sets the content for one display, either integer or string."""
@@ -34,4 +47,9 @@ class Displays:
     else:
       self.displays[index].blank()
     self.displays[0].latch() # call only once to support shift chain
+
+  def loads_config_data(self):
+    """ Indicates whether displaying data already loads config data.
+        True only for serial display and config input. """
+    return True
 

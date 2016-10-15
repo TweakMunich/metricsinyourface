@@ -36,37 +36,46 @@ class SevenSegDisplay:
     SevenSegDisplay.next_addr = address
     self.start()
 
-  def addrs():
+  def addrs(self):
     """ Returns the number of i2c addresses used by the display."""
     return self.num_digits / 4
 
   def setup(self):
     for seg in self.seg:
-      seg.begin()
+      try:
+        seg.begin()
+      except IOError:
+         print("cannot connect to i2c device")
 
   def cleanup(self):
     return None
 
   def start(self):
+    """ Prepares the display for setting data."""
     self.digit = 0
 
   def latch(self):
+    """ Shows the set value on the display."""
     for seg in self.seg:
-      seg.write_display()
+      try:
+        seg.write_display()
+      except IOError:
+        pass
 
   def send_raw(self, segments):
     self.seg[(self.num_digits - self.digit - 1) / 4].set_digit_raw(self.digit % 4, segments)
     self.digit += 1
 
   def output(self, value):
-    """ Outputs a string or a integer number onto 7-segment display."""
+    """ Outputs a string or a integer number onto 7-segment display.
+        Value is shown after call to latch(). """
     raw = sevenseg.text(value, self.num_digits)
     self.start()
     for c in raw:
       self.send_raw(c)
 
   def blank(self):
-    """ Blanks the display (all LED off). """
+    """ Blanks the display (all LED off). requires call to latch(). """
     raw = sevenseg.blanks(self.num_digits)
     self.start()
     for c in raw:

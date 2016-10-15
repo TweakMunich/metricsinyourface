@@ -13,5 +13,5 @@ def read_config():
   """ returns a list of tupels indicating (num digits, ID) for each
       connected display. Hard coded to 4-digit displays pegged to 
       ID 5 and 6. Useful when using i2c displays without any serial."""
-  return [(4, 5)]
+  return [(4, 10), (0, 10)]
 

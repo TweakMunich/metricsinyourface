@@ -16,12 +16,12 @@
 # - import appropriate read_config (readconfig_fake for hardcoded config)
 # - import Displays from display_i2c or display_shift 
 
-import readconfig_fake as readconfig
-#import readconfig_shift as readconfig
+#import readconfig_fake as readconfig
+import readconfig_shift as readconfig
 #import readconfig_i2c as readconfig
 
-from display_i2c import Displays
-#from display_shift import Displays
+#from display_i2c import Displays
+from display_shift import Displays
 
 import json
 import os
@@ -50,9 +50,13 @@ def fetch_value(url, hostname):
       return data["value"]
   except (urllib2.HTTPError, urllib2.URLError) as e:
     raise
-  except socket.timeout:
+  except socket.timeout, e:
     # undocumented exception thrown by urlopen
-    print "socket.timeout"
+    print repr(e)
+    return None
+  except socket.error, e:
+    # undocumented exception thrown by urlopen
+    print repr(e)
     return None
   except ValueError:
     return None

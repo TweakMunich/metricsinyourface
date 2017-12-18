@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-# Simple program that retrieves the number of likes ona s epcific Facebook
+# Simple program that retrieves the number of likes on a specific Facebook
 # page (Az france in this example) and posts it to the metrics display 
 
 import json
